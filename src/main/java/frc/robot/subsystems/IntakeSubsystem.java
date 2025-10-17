@@ -4,10 +4,12 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class IntakeSubsystem extends SubsystemBase {
 
@@ -27,6 +29,8 @@ public class IntakeSubsystem extends SubsystemBase {
     intakeMotor.setNeutralMode(NeutralModeValue.Coast);
     
     intaking = false;
+    intakeDeployed = false;
+    isLoaded = false; // TODO
   }
 
   /**
@@ -34,7 +38,15 @@ public class IntakeSubsystem extends SubsystemBase {
    * @param deployed Tells if the intake is deployed. true = down.
    */
   public void setIntakeDeployed(boolean deployed) {
-    
+    MotionMagicVoltage m_request;
+    if (deployed) {
+      m_request = new MotionMagicVoltage(Constants.INTAKE_DEPLOYED_POSITION);
+      intakeDeployed = true;
+    } else {
+      m_request = new MotionMagicVoltage(Constants.INTAKE_RETRACTED_POSITION);
+      intakeDeployed = false;
+    }
+    deployMotor.setControl(m_request.withEnableFOC(true).withOverrideBrakeDurNeutral(true));
   }
 
   /**
