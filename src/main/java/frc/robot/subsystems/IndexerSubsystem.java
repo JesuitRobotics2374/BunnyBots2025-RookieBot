@@ -14,7 +14,7 @@ public class IndexerSubsystem extends SubsystemBase {
   private int numOfCarrots;
 
   public IndexerSubsystem() {
-    numOfCarrots = 0;
+  numOfCarrots = 0;
   }
 
   /**
