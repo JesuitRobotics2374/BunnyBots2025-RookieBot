@@ -125,6 +125,7 @@ public class ExactAlign extends Command {
 
     @Override
     public void execute() {
+
         drivetrain.setControl(driveRequest
                 .withVelocityX(-dx)
                 .withVelocityY(-dy)
@@ -238,25 +239,25 @@ public class ExactAlign extends Command {
         boolean yTollerenace = Math.abs(error_y) < Y_TOLERANCE;
         boolean thetaTollerenace = Math.abs(error_yaw) + (0.5 * Math.PI / 180) < YAW_TOLERANCE;
 
-        if (xTollerenace || drivetrain.getForwardRangeCombined() < 0.33)
-            dx = 0;
-        if (yTollerenace)
-            dy = 0;
-        if (thetaTollerenace)
-            dtheta = 0;
+        // if (xTollerenace || drivetrain.getForwardRangeCombined() < 0.33)
+        //     dx = 0;
+        // if (yTollerenace)
+        //     dy = 0;
+        // if (thetaTollerenace)
+        //     dtheta = 0;
 
-        // Set the drive request
-        if (clock >= 20) {
-            // System.out.println("Drive Control: dx: " + dx + " dy: " + dy);
-            System.out.println("cr range: " + drivetrain.getForwardRangeCombined());
-        }
+        // // Set the drive request
+        // if (clock >= 20) {
+        //     // System.out.println("Drive Control: dx: " + dx + " dy: " + dy);
+        //     System.out.println("cr range: " + drivetrain.getForwardRangeCombined());
+        // }
 
-        // Update state for isFinished
-        if ((xTollerenace || (drivetrain.getForwardRangeCombined() < 0.33)) && yTollerenace && thetaTollerenace) {
-            framesAtTarget++;
-        } else {
-            framesAtTarget = 0;
-        }
+        // // Update state for isFinished
+        // if ((xTollerenace || (drivetrain.getForwardRangeCombined() < 0.33)) && yTollerenace && thetaTollerenace) {
+        //     framesAtTarget++;
+        // } else {
+        //     framesAtTarget = 0;
+        // }
 
     }
 
@@ -266,9 +267,9 @@ public class ExactAlign extends Command {
         drivetrain.setControl(new SwerveRequest.SwerveDriveBrake());
         // drivetrain.setDefaultCommand(
         // drivetrain.applyRequest(() -> drive
-        // .withVelocityX(0)
-        // .withVelocityY(0)
-        // .withRotationalRate(0)));
+        //     .withVelocityX(0)
+        //     .withVelocityY(0)
+        //     .withRotationalRate(0)));
         if (interrupted) {
             System.out.println("EXACTALIGN INTERRUPTED");
         } else {
