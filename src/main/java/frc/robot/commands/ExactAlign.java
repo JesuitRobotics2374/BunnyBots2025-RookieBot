@@ -76,7 +76,7 @@ public class ExactAlign extends Command {
     private int clock;
 
     public ExactAlign(CommandSwerveDrivetrain drivetrain, TagRelativePose tagRelativePose) {
-
+        System.out.println("exact align created");
         finishedOverride = false;
         this.clock = 0;
 
@@ -141,6 +141,8 @@ public class ExactAlign extends Command {
         dx = 0;
         dy = 0;
         dtheta = 0;
+
+        System.out.println(VisionSubsystem.getTagRelativeToBot(tagId));
 
         Pose3d currentPose = VisionSubsystem.averagePoses(VisionSubsystem.getTagRelativeToBot(tagId));
         Pose3d usePose = null;
@@ -262,6 +264,11 @@ public class ExactAlign extends Command {
     }
 
     @Override
+    public boolean isFinished() {
+        return framesAtTarget >= REQUIRED_FRAMES_AT_TARGET || finishedOverride;
+    }
+
+    @Override
     public void end(boolean interrupted) {
         finishedOverride = true;
         drivetrain.setControl(new SwerveRequest.SwerveDriveBrake());
@@ -275,11 +282,6 @@ public class ExactAlign extends Command {
         } else {
             System.out.println("EXACTALIGN FINISHED");
         }
-    }
-
-    @Override
-    public boolean isFinished() {
-        return framesAtTarget >= REQUIRED_FRAMES_AT_TARGET || finishedOverride;
     }
 
     public static Pose3d averagePoses(ArrayList<Pose3d> poses) {
