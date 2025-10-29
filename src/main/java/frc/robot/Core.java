@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import javax.sound.sampled.SourceDataLine;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -20,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.ExactAlign;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.utils.Target;
 import frc.robot.utils.Target.Landmark;
 import frc.robot.utils.Target.Side;
@@ -33,9 +36,7 @@ public class Core {
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-    private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
-
+    
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final CommandXboxController driveController = new CommandXboxController(0);
@@ -53,6 +54,8 @@ public class Core {
         configureBindings();
         //configureShuffleBoard();
 
+        VisionSubsystem.initializeVisionSubsystem();
+
 
         // target = new Target(this);
         // target.setLocation(new Target.Location(Landmark.REEF_BACK, Side.RIGHT));
@@ -65,17 +68,17 @@ public class Core {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(driveController.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(driveController.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                drive.withVelocityX(driveController.getLeftY() * MaxSpeed * getAxisMovementScale()) // Drive forward with negative Y (forward)
+                    .withVelocityY(driveController.getLeftX() * MaxSpeed * getAxisMovementScale()) // Drive left with negative X (left)
                     .withRotationalRate(driveController.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
         TagRelativePose testingTagRelativePose = new TagRelativePose(15, 0
-        , 0.7, 0.0); // idk what units this is in - x is left
+        , 0, 0.0); // idk what units this is in - x is left
         // right & y is front back
         driveController.a().onTrue(new ExactAlign(drivetrain, testingTagRelativePose));
-
+    
         // driveController.x().onTrue(new SequentialCommandGroup(
         //     new ExactAlign(drivetrain, target.getTagRelativePose())
         //     //new ScoreCommand(target.getSetpoint(), elevatorSubsystem, manipulatorSubsystem)
@@ -87,5 +90,9 @@ public class Core {
 
     public Command getAutonomousCommand() {
         return Commands.print("No autonomous command configured");
+    }
+
+    public double getAxisMovementScale() {
+        return (1 - (driveController.getRightTriggerAxis() * 0.75));
     }
 }

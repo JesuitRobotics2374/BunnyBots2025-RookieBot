@@ -53,7 +53,12 @@ public class VisionSubsystem {
             );
             e.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
-            cameraTypes[i] = CameraType.APRIL_TAG;
+            CameraType t = pipeLineAsCameraType(c.getPipelineIndex());
+            System.out.println("pipeline num = " + c.getPipelineIndex());
+
+            cameras[i] = c;
+            poseEstimators[i] = e;
+            cameraTypes[i] = t;
         }
     }
 
