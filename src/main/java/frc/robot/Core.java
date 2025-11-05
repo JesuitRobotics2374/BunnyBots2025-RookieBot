@@ -19,8 +19,10 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.commands.AlignCommand;
 import frc.robot.commands.ExactAlign;
-import frc.robot.generated.TunerConstants;
+import frc.robot.commands.TurnCommand;
+import frc.robot.generated.SwerveeTunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.utils.Target;
@@ -29,7 +31,7 @@ import frc.robot.utils.Target.Side;
 import frc.robot.utils.Target.TagRelativePose;
 
 public class Core {
-    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.5; // kSpeedAt12Volts desired top speed
+    private double MaxSpeed = SwerveeTunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.5; // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -42,7 +44,7 @@ public class Core {
     private final CommandXboxController driveController = new CommandXboxController(0);
     private final CommandXboxController operatorController = new CommandXboxController(1);
 
-    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    public final CommandSwerveDrivetrain drivetrain = SwerveeTunerConstants.createDrivetrain();
 
     private Target target;
     public AprilTagFieldLayout atf;
@@ -78,7 +80,7 @@ public class Core {
         , 0, 0.0); // idk what units this is in - x is left
         // right & y is front back
         // currently working with oscillation
-        driveController.a().onTrue(new ExactAlign(drivetrain, testingTagRelativePose));
+        driveController.a().onTrue(new AlignCommand(drivetrain, testingTagRelativePose));
     
         // driveController.x().onTrue(new SequentialCommandGroup(
         //     new ExactAlign(drivetrain, target.getTagRelativePose())
