@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -246,7 +247,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return estimator.getEstimatedPosition().getY();
     }
 
-     
     @Override
     public void periodic() {
         /*
