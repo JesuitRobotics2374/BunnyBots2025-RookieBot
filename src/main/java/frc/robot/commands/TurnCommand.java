@@ -1,7 +1,7 @@
 package frc.robot.commands;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -30,13 +30,16 @@ public class TurnCommand extends Command {
 
     private final double yaw_offset;
     private double dtheta;
+    private double currentYaw;
 
     boolean finishedOverride;
 
+    Pigeon2 pigeon = new Pigeon2(0);
+
     public TurnCommand(CommandSwerveDrivetrain drivetrain) {
         this.drivetrain = drivetrain;
-        this.yaw_offset = Math.PI / 2;
 
+        yaw_offset = Math.PI/2;
         yawController = new PIDController(2.2, 0.1, 0.2);
         yawController.enableContinuousInput(-Math.PI, Math.PI);
     }
@@ -51,22 +54,41 @@ public class TurnCommand extends Command {
         // Reset controllers and rate limiters
         yawController.reset();
         yawRateLimiter.reset(0);
+        pigeon.reset();
 
     }
 
+    @Override
     public void execute() {
-        dtheta = 0;
+        drivetrain.setControl(driveRequest.withRotationalRate(dtheta));
 
-        dtheta = yawController.calculate(avg_yaw, yaw_offset);
+        currentYaw = pigeon.getYaw().getValueAsDouble();
+
+        dtheta = yawController.calculate(currentYaw, yaw_offset);
+        dtheta = Math.max(-MAX_ANGULAR_SPEED, Math.min(dtheta * THETA_SPEED_MODIFIER, MAX_ANGULAR_SPEED));
+        dtheta = yawRateLimiter.calculate(dtheta);
     }
 
+    @Override
     public boolean isFinished() {
-        return true; //change in a bit
+        return Math.abs(currentYaw - yaw_offset) < 0.05; // ~3 degrees tolerance
         // set end command
     }
 
+    @Override
     public void end(boolean interrupted) {
         drivetrain.setControl(new SwerveRequest.SwerveDriveBrake());
         // stop the robot
     }
 }
+
+/*
+    Some issues to consider:
+    Relative vs. absolute turn – Your current code always tries to go to an absolute 90°, not “turn 90° from wherever you are.” If your robot starts at a different heading, it won’t turn the intended amount.
+
+    First loop dtheta bug – You calculate dtheta after sending it to the drivetrain. On the first iteration, the robot won’t turn.
+
+    Wraparound issues – If your current yaw is near ±π, the isFinished() check can fail or trigger too early.
+
+    MIN_ANGULAR_COMMAND not used – Very small commands might not move the robot if your motors have a deadzone.
+ */
