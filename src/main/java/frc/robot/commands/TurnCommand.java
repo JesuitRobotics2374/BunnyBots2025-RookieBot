@@ -57,7 +57,7 @@ public class TurnCommand extends Command {
     public void execute() {
         dtheta = 0;
 
-        dtheta = yawController.calculate(avg_yaw, yaw_offset);
+        // dtheta = yawController.calculate(avg_yaw, yaw_offset);
     }
 
     public boolean isFinished() {
@@ -66,7 +66,7 @@ public class TurnCommand extends Command {
     }
 
     public void end(boolean interrupted) {
-        drivetrain.setControl(new SwerveRequest.SwerveDriveBrake());
+        // drivetrain.setControl(new SwerveRequest.SwerveDriveBrake());
         // stop the robot
     }
 }

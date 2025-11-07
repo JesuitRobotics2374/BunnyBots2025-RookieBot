@@ -12,6 +12,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -19,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.AlignCommand;
 import frc.robot.commands.ExactAlign;
 import frc.robot.commands.TurnCommand;
 import frc.robot.generated.SwerveeTunerConstants;
@@ -31,13 +31,19 @@ import frc.robot.utils.Target.Side;
 import frc.robot.utils.Target.TagRelativePose;
 
 public class Core {
-    private double MaxSpeed = SwerveeTunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.5; // kSpeedAt12Volts desired top speed
+    private double MaxSpeed = SwerveeTunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.8; // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    private static final double TranslationalAccelerationLimit = 6; // meters per second^2
+    private static final double RotationalAccelerationLimit = Math.PI * 3.5; // radians per second^2
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+
+    private final SlewRateLimiter xRateLimiter = new SlewRateLimiter(TranslationalAccelerationLimit);
+    private final SlewRateLimiter yRateLimiter = new SlewRateLimiter(TranslationalAccelerationLimit);
+    private final SlewRateLimiter omegaRateLimiter = new SlewRateLimiter(RotationalAccelerationLimit);
     
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -69,18 +75,30 @@ public class Core {
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(driveController.getLeftY() * MaxSpeed * getAxisMovementScale()) // Drive forward with negative Y (forward)
-                    .withVelocityY(driveController.getLeftX() * MaxSpeed * getAxisMovementScale()) // Drive left with negative X (left)
-                    .withRotationalRate(driveController.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
+            drivetrain.applyRequest(() -> {
+                double axisScale = getAxisMovementScale();
+                double desiredVelocityX = driveController.getLeftY() * MaxSpeed * axisScale;
+                double desiredVelocityY = driveController.getLeftX() * MaxSpeed * axisScale;
+                double desiredRotationalRate = -driveController.getRightX() * MaxAngularRate * axisScale;
+
+                return drive
+                    .withVelocityX(xRateLimiter.calculate(desiredVelocityX)) // Limit translational acceleration forward/backward
+                    .withVelocityY(yRateLimiter.calculate(desiredVelocityY)) // Limit translational acceleration left/right
+                    .withRotationalRate(omegaRateLimiter.calculate(desiredRotationalRate)); // Limit rotational acceleration
+            })
         );
 
-        TagRelativePose testingTagRelativePose = new TagRelativePose(15, 0
+        RobotModeTriggers.disabled().onTrue(drivetrain.runOnce(() -> {
+            xRateLimiter.reset(0.0);
+            yRateLimiter.reset(0.0);
+            omegaRateLimiter.reset(0.0);
+        }));
+
+        TagRelativePose testingTagRelativePose = new TagRelativePose(15, 1
         , 0, 0.0); // idk what units this is in - x is left
         // right & y is front back
         // currently working with oscillation
-        driveController.a().onTrue(new AlignCommand(drivetrain, testingTagRelativePose));
+        driveController.a().onTrue(new ExactAlign(drivetrain, testingTagRelativePose));
     
         // driveController.x().onTrue(new SequentialCommandGroup(
         //     new ExactAlign(drivetrain, target.getTagRelativePose())
