@@ -18,41 +18,42 @@ public class ShooterSubsystem extends SubsystemBase {
   public ShooterSubsystem() {
 
     this.control = new TalonFX(37, "FastFD"); // change id when necessary
-    double targetSpeed = Constants.TARGET_SHOOTER_SPEED;
-    double maxRPM = Constants.SHOOTER_MAX_RPM;
-    double maxRPS = maxRPM / 60;
+    
+  }
 
-    public boolean checkSpeedShooter() {
-      int motorRPS = control.getVelocity().getValue();
-      double motorSpeed = motorRPS / maxRPS;
-      return motorSpeed == targetSpeed;
+  double targetSpeed = Constants.TARGET_SHOOTER_SPEED;
+  double maxRPM = Constants.SHOOTER_MAX_RPM;
+  double maxRPS = maxRPM / 60;
 
+  public boolean checkSpeedShooter() {
+    double motorRPS = control.getVelocity().getValueAsDouble();
+    double motorSpeed = motorRPS / maxRPS;
+    return motorSpeed == targetSpeed;
 
-      // use this for shuffleboard 
+    // use this for shuffleboard
 
+  }
+
+  public void setSpeedShooter(double speed) {
+    control.set(speed);
+  }
+
+  public boolean isShooterReady(boolean isCarrotLoaded) { // fix when indexer is made
+
+    // indexer and shooter need to communicate about if 5 carrots are ready to be
+    // shot
+
+    if (checkSpeedShooter() /* && insert communication here */ ) {
+      return true;
+    } else {
+      return false;
     }
 
-    public void setSpeedShooter(double speed) {
-      control.set(speed);
-    }
+  }
 
-    public boolean isShooterReady(boolean isCarrotLoaded) { //fix when indexer is made
-
-      // indexer and shooter need to communicate about if 5 carrots are ready to be shot
-
-      if (checkSpeedShooter()  /* && insert communication here*/ ) {
-        return true;
-      }
-      else {
-        return false;
-      }
-
-
-    }
-
-    public void shootCarrots(double rpmValue) {
+  public void shootCarrots(double rpmValue) {
       
-      if (isShooterReady()) {
+      if (isShooterReady(true)) {
         
         setSpeedShooter(targetSpeed);
 
@@ -65,13 +66,10 @@ public class ShooterSubsystem extends SubsystemBase {
       }
 
       else {
-        System.out.println("SHOOTER NOT READY!")
+        System.out.println("SHOOTER NOT READY!");
       }
       
     // fix later
-
-    } 
-
   }
 
   @Override
