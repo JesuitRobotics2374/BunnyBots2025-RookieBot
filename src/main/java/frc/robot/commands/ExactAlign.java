@@ -14,8 +14,8 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.utils.Target.TagRelativePose;
-import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Vision.VisionSubsystem;
 
 public class ExactAlign extends Command {
 
@@ -58,6 +58,7 @@ public class ExactAlign extends Command {
     private static final int MAX_FRAMES_TO_AVERAGE = 7;
 
     private final CommandSwerveDrivetrain drivetrain;
+    private final VisionSubsystem vision;
     // private final SwerveRequest.RobotCentric drive;
 
     private final int tagId;
@@ -75,12 +76,13 @@ public class ExactAlign extends Command {
 
     private int clock;
 
-    public ExactAlign(CommandSwerveDrivetrain drivetrain, TagRelativePose tagRelativePose) {
+    public ExactAlign(CommandSwerveDrivetrain drivetrain, VisionSubsystem visionSubsystem, TagRelativePose tagRelativePose) {
         System.out.println("exact align created");
         finishedOverride = false;
         this.clock = 0;
 
         this.drivetrain = drivetrain;
+        this.vision = visionSubsystem;
         this.tagId = tagRelativePose.getTagId();
         this.x_offset = tagRelativePose.getX();
         this.y_offset = tagRelativePose.getY();
@@ -142,9 +144,8 @@ public class ExactAlign extends Command {
         dy = 0;
         dtheta = 0;
 
-        System.out.println(VisionSubsystem.getTagRelativeToBot(tagId));
-
-        Pose3d currentPose = VisionSubsystem.averagePoses(VisionSubsystem.getTagRelativeToBot(tagId));
+        Pose3d currentPose = vision.getTagRelativeToBot(tagId);
+        System.out.println(currentPose);
         Pose3d usePose = null;
 
         if (currentPose == null) {

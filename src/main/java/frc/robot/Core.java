@@ -16,6 +16,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -24,7 +25,7 @@ import frc.robot.commands.ExactAlign;
 import frc.robot.commands.TurnCommand;
 import frc.robot.generated.SwerveeTunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.Vision.VisionSubsystem;
 import frc.robot.utils.Target;
 import frc.robot.utils.Target.Landmark;
 import frc.robot.utils.Target.Side;
@@ -51,6 +52,7 @@ public class Core {
     private final CommandXboxController operatorController = new CommandXboxController(1);
 
     public final CommandSwerveDrivetrain drivetrain = SwerveeTunerConstants.createDrivetrain();
+    public final VisionSubsystem visionSubsystem = new VisionSubsystem();
 
     private Target target;
     public AprilTagFieldLayout atf;
@@ -61,9 +63,6 @@ public class Core {
         // autoChooser = AutoBuilder.buildAutoChooser();
         configureBindings();
         //configureShuffleBoard();
-
-        VisionSubsystem.initializeVisionSubsystem();
-
 
         // target = new Target(this);
         // target.setLocation(new Target.Location(Landmark.REEF_BACK, Side.RIGHT));
@@ -88,17 +87,12 @@ public class Core {
             })
         );
 
-        RobotModeTriggers.disabled().onTrue(drivetrain.runOnce(() -> {
-            xRateLimiter.reset(0.0);
-            yRateLimiter.reset(0.0);
-            omegaRateLimiter.reset(0.0);
-        }));
-
         TagRelativePose testingTagRelativePose = new TagRelativePose(15, 1
         , 0, 0.0); // idk what units this is in - x is left
         // right & y is front back
         // currently working with oscillation
-        driveController.a().onTrue(new ExactAlign(drivetrain, testingTagRelativePose));
+        driveController.a().onTrue(new ExactAlign(drivetrain, visionSubsystem, testingTagRelativePose));
+        driveController.b().onTrue(visionSubsystem.runOnce(() -> visionSubsystem.getTagRelativeToBot(15)));
     
         // driveController.x().onTrue(new SequentialCommandGroup(
         //     new ExactAlign(drivetrain, target.getTagRelativePose())
