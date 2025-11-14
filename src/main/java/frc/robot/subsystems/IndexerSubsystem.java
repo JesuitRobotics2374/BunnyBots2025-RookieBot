@@ -9,12 +9,25 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix6.hardware.TalonFX;
 import frc.robot.Constants; // hey theres a constants file in the shooter branch this references that
+import com.ctre.phoenix6.hardware.core.CoreCANrange;
+import com.ctre.phoenix6.configs.CANrangeConfiguration;
+import com.ctre.phoenix6.signals.StatusSignal;
+import com.ctre.phoenix6.hardware.CANBus;      // only if specifying CAN bus name
+import edu.wpi.first.units.Distance;           // WPILib units, if you use them
+
+
+
 
 
 /** todo:
  * Make control work
  * Set the conveyor belt move (public void shootcarrots)
- */
+ * 
+ * actually do things with the carrot value (letsgo i got that to work :)
+ * 
+ *  
+ * 
+*/
 
 public class IndexerSubsystem extends SubsystemBase {
   /** Creates a new IndexerSubsystem. */
@@ -22,10 +35,15 @@ public class IndexerSubsystem extends SubsystemBase {
   private boolean isIndexFull;
   private int numOfCarrots;
   private TalonFX control; 
+  private CoreCANrange sensor;
+  private boolean detectionState;
+
 
   public IndexerSubsystem() {
     numOfCarrots = 0;
     this.control = new TalonFX(35, "FastFD"); // change id when necessary
+    this.sensor = new CoreCANrange(27, "FastFD"); // change id when necessary 
+    
 
   }
 
@@ -66,10 +84,21 @@ public class IndexerSubsystem extends SubsystemBase {
    * @return true = carrot is loaded.
    */
  
-  
+  public void updateDetectionState(){
 
-  // name the one in indexer subsystem like conditionalShootCarrots or something
-  // because that checks before shooting :)
+    if (detectionState != sensor.getIsDetected().getValue){
+
+      if (detectionState == false){
+
+        numOfCarrots++;
+
+      } 
+  
+    }
+
+    detectionState = sensor.getIsDetected().getValue();
+
+  } 
 
   public void shootCarrots() {
     
@@ -82,5 +111,8 @@ public class IndexerSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    updateDetectionState();
+    
+
   }
 }
