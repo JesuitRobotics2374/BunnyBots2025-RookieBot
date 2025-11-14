@@ -87,11 +87,12 @@ public class Camera {
     public void updateResults() {
         List<PhotonPipelineResult> unreadResults = camera.getAllUnreadResults(); // Get all unread results from the camera
 
+
         if (unreadResults.size() == 0) { // If there are no unread results, ignore changing anything
             return;
         }
         else {
-            latestResult = unreadResults.get(unreadResults.size() - 1); // Update latestResult to the most recent unread result
+            latestResult = unreadResults.get(0); // Update latestResult to the most recent unread result
         }
     }
 
