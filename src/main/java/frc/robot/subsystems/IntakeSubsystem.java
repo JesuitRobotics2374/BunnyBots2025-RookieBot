@@ -11,6 +11,10 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -18,21 +22,19 @@ import frc.robot.Constants;
 
 public class IntakeSubsystem extends SubsystemBase {
 
-  private TalonFX intakeMotor;
+  private SparkMax intakeMotor;
 
-  private boolean intakeDeployed; // true = down
   private boolean intaking; // true = intaking
-  private boolean isLoaded; // true = loaded
 
   /** Initializer - runs when class is created. */
   public IntakeSubsystem() {
-    intakeMotor = new Spark(6);
+    intakeMotor = new SparkMax(6, MotorType.kBrushless);
+    SparkMaxConfig config = new SparkMaxConfig();
+    config.idleMode(IdleMode.kCoast);
 
-    intakeMotor.setNeutralMode(NeutralModeValue.Coast);
+    intakeMotor.configure(config, null, null);
     
     intaking = false;
-    intakeDeployed = false;
-    isLoaded = false; // TODO
   }
 
   /**
@@ -77,27 +79,11 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   /**
-   * tells if intake is down or up.
-   * @return true = down.
-   */
-  public boolean getIntakeDeployed() {
-    return intakeDeployed;
-  }
-
-  /**
    * tells if intake is intaking. 
    * @return true = intaking.
    */
   public boolean getIntaking() {
     return intaking;
-  }
-
-  /**
-   * tells if intake is loaded.
-   * @return true = loaded.
-   */
-  public boolean getIsLoaded() {
-    return isLoaded;
   }
 
   @Override
