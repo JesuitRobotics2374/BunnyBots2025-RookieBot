@@ -8,12 +8,16 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import com.revrobotics.spark.SparkLowLevel;
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkMax;
+
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class IntakeSubsystem extends SubsystemBase {
 
-  private TalonFX deployMotor;
   private TalonFX intakeMotor;
 
   private boolean intakeDeployed; // true = down
@@ -22,10 +26,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
   /** Initializer - runs when class is created. */
   public IntakeSubsystem() {
-    deployMotor = new TalonFX(5);
-    intakeMotor = new TalonFX(6);
+    intakeMotor = new Spark(6);
 
-    deployMotor.setNeutralMode(NeutralModeValue.Brake);
     intakeMotor.setNeutralMode(NeutralModeValue.Coast);
     
     intaking = false;
@@ -37,17 +39,16 @@ public class IntakeSubsystem extends SubsystemBase {
    * Deploy the intake (put the intake down).
    * @param deployed Tells if the intake is deployed. true = down.
    */
-  public void setIntakeDeployed(boolean deployed) {
-    MotionMagicVoltage m_request;
-    if (deployed) {
-      m_request = new MotionMagicVoltage(Constants.INTAKE_DEPLOYED_POSITION);
-      intakeDeployed = true;
-    } else {
-      m_request = new MotionMagicVoltage(Constants.INTAKE_RETRACTED_POSITION);
-      intakeDeployed = false;
-    }
-    deployMotor.setControl(m_request.withEnableFOC(true).withOverrideBrakeDurNeutral(true));
-  }
+  // public void setIntakeDeployed(boolean deployed) {
+  //   MotionMagicVoltage m_request;
+  //   if (deployed) {
+  //     m_request = new MotionMagicVoltage(Constants.INTAKE_DEPLOYED_POSITION);
+  //     intakeDeployed = true;
+  //   } else {
+  //     m_request = new MotionMagicVoltage(Constants.INTAKE_RETRACTED_POSITION);
+  //     intakeDeployed = false;
+  //   }
+  // }
 
   /**
    * Stops intaking.
