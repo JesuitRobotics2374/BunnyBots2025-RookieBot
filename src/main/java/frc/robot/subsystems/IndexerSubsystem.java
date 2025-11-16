@@ -6,14 +6,14 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix6.hardware.TalonFX;
 import frc.robot.Constants; // hey theres a constants file in the shooter branch this references that
 import com.ctre.phoenix6.hardware.core.CoreCANrange;
 import com.ctre.phoenix6.configs.CANrangeConfiguration;
-import com.ctre.phoenix6.signals.StatusSignal;
-import com.ctre.phoenix6.hardware.CANBus;      // only if specifying CAN bus name
-import edu.wpi.first.units.Distance;           // WPILib units, if you use them
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.CANBus;      // only if specifying CAN bus name
 
 
 
@@ -34,15 +34,19 @@ public class IndexerSubsystem extends SubsystemBase {
 
   private boolean isIndexFull;
   private int numOfCarrots;
-  private TalonFX control; 
-  private CoreCANrange sensor;
+  private TalonFX entranceControl;
+  private TalonFX exitControl;  
+  private CoreCANrange intakeSensor;
+  private CoreCANrange shooterSensor;
   private boolean detectionState;
 
 
   public IndexerSubsystem() {
     numOfCarrots = 0;
-    this.control = new TalonFX(35, "FastFD"); // change id when necessary
-    this.sensor = new CoreCANrange(27, "FastFD"); // change id when necessary 
+    this.entranceControl = new TalonFX(6, "FastFD"); // change id when necessary
+    this.exitControl = new TalonFX(7, "FastFD"); // change id when necessary
+    this.intakeSensor = new CoreCANrange(67, "FastFD"); // change id when necessary 
+    this.shooterSensor = new CoreCANrange(67, "FastFD"); // change id when necessary 
     
 
   }
@@ -62,20 +66,45 @@ public class IndexerSubsystem extends SubsystemBase {
    * @return true = indexer is full.
    */
   public boolean getIsIndexFull() {
+
+    if (getNumOfCarrots() == 4) {
+      isIndexFull = true;
+    }
+    else {
+      isIndexFull = false;
+    }
+
     return isIndexFull;
   } // true = four carrots in indexer {}
 
-  /**
-   * Loads carrot into shooter.
-   * 
-   * @param speed The speed of the motor when loading.
-   */
-  public void loadCarrot(int speed) {
-  control.set(0.2); // goal of this func is to create room in conveyor belt for more carrots (move conveyor for short amount of time then turn off)  
-  for (int i = 0; i<10000; i++ /*edit value later depending on how long we want this to go */){
-      continue;
+  // /**
+  //  * Loads carrot into shooter.
+  //  * 
+  //  * @param speed The speed of the motor when loading.
+  //  */
+  // public void loadCarrot(int speed) {
+  // control.set(0.2); // goal of this func is to create room in conveyor belt for more carrots (move conveyor for short amount of time then turn off)  
+  // for (int i = 0; i<10000; i++ /*edit value later depending on how long we want this to go */){
+  //     continue;
+  // }
+  // control.set(0);
+  // }
+
+  public void setBeltSpeed(int speed) {
+    entranceControl.set(speed);
+    exitControl.set(speed);
   }
-  control.set(0);
+
+  public Command moveBelt() {
+    return FunctionalCommand(
+      //On init
+      () -> {},
+      //execute
+      () -> {
+        setBeltSpeed(0.2);
+      }
+      //interrupted
+      interrupt -> 
   }
 
   /**
@@ -86,7 +115,7 @@ public class IndexerSubsystem extends SubsystemBase {
  
   public void updateDetectionState(){
 
-    if (detectionState != sensor.getIsDetected().getValue){
+    if (detectionState != intakeSensor.getIsDetected().getValue()){
 
       if (detectionState == false){
 
@@ -96,14 +125,14 @@ public class IndexerSubsystem extends SubsystemBase {
   
     }
 
-    detectionState = sensor.getIsDetected().getValue();
+    detectionState = intakeSensor.getIsDetected().getValue();
 
   } 
 
   public void shootCarrots() {
     
 
-    control.set(Constants.CONVEYOR_TARGET_SPEED); //just a placeholder for now
+    exitControl.set(Constants.CONVEYOR_TARGET_SPEED); //just a placeholder for now
     // tihs will run the conveyor belt for a longer time than usual to make sure all carrots are shot, then we can go back to getting carrot!
 
   }
