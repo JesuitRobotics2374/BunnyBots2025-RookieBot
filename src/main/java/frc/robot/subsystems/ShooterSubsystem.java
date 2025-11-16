@@ -4,38 +4,61 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import com.ctre.phoenix6.controls.ControlRequest;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.*;
 import frc.robot.Constants;
 
 
+/*
+ * NOTICE: SOME INFORMATION REQUIRES INDEXER SUBSYSTEM
+ */
 public class ShooterSubsystem extends SubsystemBase {
    //change later when more info is available 
   // motor type for flywheels is kraken 
-  private TalonFX control;
+  private TalonFX bottomWheel;
+  private TalonFX topWheel;
 
   public ShooterSubsystem() {
 
-    this.control = new TalonFX(37, "FastFD"); // change id when necessary
+    this.bottomWheel = new TalonFX(1, "FastFD"); // change id when necessary
+    this.topWheel = new TalonFX(2, "FastFD"); //change id when necessary
     
   }
 
   double targetSpeed = Constants.TARGET_SHOOTER_SPEED;
-  double maxRPM = Constants.SHOOTER_MAX_RPM;
-  double maxRPS = maxRPM / 60;
+  // double maxRPM = Constants.SHOOTER_MAX_RPM;
+  // double maxRPS = maxRPM / 60;
 
-  public boolean checkSpeedShooter() {
-    double motorRPS = control.getVelocity().getValueAsDouble();
-    double motorSpeed = motorRPS / maxRPS;
-    return motorSpeed == targetSpeed;
+  // public boolean checkSpeedShooter() { //STILL NEEDS TO BE FIXED 
+  //   //might wanna add tolerance
+  //   double motorRPS1 = bottomWheel.getVelocity().getValueAsDouble();
+  //   double motorRPS2 = bottomWheel.getVelocity().getValueAsDouble();
+  //   double motorSpeed1 = motorRPS1 / maxRPS;
+  //   double motorSpeed2 = motorRPS2 / maxRPS;
+  //   return motorSpeed1 == targetSpeed && motorSpeed2 == targetSpeed;
 
-    // use this for shuffleboard
+  //   // use this for shuffleboard
 
+  // }
+
+  /**
+   * Moves both motors in opposite direction to shoot carrot.
+   * @param speed
+   */
+  public void setSpeedShooter(double speed) {
+    bottomWheel.set(speed);
+    topWheel.set(-speed);
   }
 
-  public void setSpeedShooter(double speed) {
-    control.set(speed);
+  public void stop() {
+    setSpeedShooter(0);
   }
 
   public boolean isShooterReady(boolean isCarrotLoaded) { // fix when indexer is made
@@ -43,7 +66,13 @@ public class ShooterSubsystem extends SubsystemBase {
     // indexer and shooter need to communicate about if 5 carrots are ready to be
     // shot
 
-    if (checkSpeedShooter() /* && insert communication here */ ) {
+    // if (checkSpeedShooter() /* && insert communication here */ ) {
+    //   return true;
+    // } else {
+    //   return false;
+    // }
+
+    if (isCarrotLoaded == true) {
       return true;
     } else {
       return false;
@@ -51,22 +80,38 @@ public class ShooterSubsystem extends SubsystemBase {
 
   }
 
-  public void shootCarrots(double rpmValue) {
+  public Command shootCarrots(double rpmValue) {
       
-      if (isShooterReady(true)) {
-        
-        setSpeedShooter(targetSpeed);
+      if (isShooterReady(true)) { //JUST FOR NOW MUST FIX
 
-        // wait however long it takes for flywheel to reach targetSpeed
-        // communicate with indexer
+        return new FunctionalCommand(
+                          //on init
+                          () -> {},
+                           
+                          //on execute
+                          () -> {
+                            this.setSpeedShooter(targetSpeed);
+                          },
 
-        //command here but i lwk forgot how to do that
+                          //when stopped
+                          interrupted -> {
+                            this.stop();
+                          },
+
+                          //end command when:
+                          null //for now FIX LATER
+                          ,
+
+                          this);
+
+
 
 
       }
 
       else {
         System.out.println("SHOOTER NOT READY!");
+        return null;
       }
       
     // fix later
