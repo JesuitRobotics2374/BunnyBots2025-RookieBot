@@ -15,8 +15,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.utils.Target.TagRelativePose;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Vision.VisionSubsystem;
+import frc.robot.subsystems.Vision.Camera;
 
-public class ExactAlign extends Command {
+public class CarrotAlign extends Command {
 
     private final SwerveRequest.RobotCentric driveRequest = new SwerveRequest.RobotCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
@@ -75,8 +76,8 @@ public class ExactAlign extends Command {
 
     private int clock;
 
-    public ExactAlign(CommandSwerveDrivetrain drivetrain, VisionSubsystem visionSubsystem, TagRelativePose tagRelativePose) {
-        System.out.println("exact align created");
+    public CarrotAlign(CommandSwerveDrivetrain drivetrain, VisionSubsystem visionSubsystem, TagRelativePose tagRelativePose) {
+        System.out.println("Carrot align created");
         finishedOverride = false;
         this.clock = 0;
 
@@ -143,7 +144,7 @@ public class ExactAlign extends Command {
         dy = 0;
         dtheta = 0;
 
-        Pose3d currentPose = vision.getTagRelativeToBot(tagId);
+        Pose3d currentPose = vision.getNearestObject(Camera.Type.CARROT);
         System.out.println(currentPose);
         Pose3d usePose = null;
 

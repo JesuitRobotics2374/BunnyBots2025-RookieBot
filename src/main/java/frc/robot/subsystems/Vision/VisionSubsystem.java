@@ -42,11 +42,11 @@ public class VisionSubsystem extends SubsystemBase{
      * Gets a list of all visible tags from all cameras.
      * @return A list of all visible tag IDs.
      */
-    public List<Integer> getAllVisibleTags() {
+    public List<Integer> getAllVisibleTagIDs() {
         List<Integer> allTags = new ArrayList<>(); // A list to hold all visible tag IDs
 
         for (int i = 0; i < numCams; i++) { // Iterate through each camera and get its visible tags
-            allTags.addAll(cameras[i].getAllAvailableTags());
+            allTags.addAll(cameras[i].getAllAvailableTagIDs());
         }
 
         return allTags; // Return the list of all visible tag IDs
@@ -58,7 +58,7 @@ public class VisionSubsystem extends SubsystemBase{
      * @return True if the tag is visible, false otherwise.
      */
     public boolean canSeeTag(int tagID) {
-        List<Integer> allTags = getAllVisibleTags(); // Get the list of all visible tags
+        List<Integer> allTags = getAllVisibleTagIDs(); // Get the list of all visible tags
         
         if (tagID == -1) { // If tagID is -1, check if any tags are visible
             return allTags.size() > 0;
@@ -138,30 +138,30 @@ public class VisionSubsystem extends SubsystemBase{
 
             tagPoses.add(cameras[i].getTagRelativeToBot(tagID)); // Add the tag pose from the camera to the list
         }
-
-        System.out.println(averagePoses(tagPoses));
-
+        
         return averagePoses(tagPoses); // Return the averaged tag pose
     }
 
     /**
+     * DEPRACATED UNTIL FURTHER NOTICE, DOES NOT WORK
      * Gets the pose of the robot relative to a specific tag, averaged across all cameras.
      * @param tagID, the ID of the tag to get the pose for.
      * @return The averaged Pose3d of the robot relative to the tag.
      */
     public Pose3d getBotRelativeToTag(int tagID) { 
-        ArrayList<Pose3d> tagPoses = new ArrayList<>(); // A list to hold the poses of the robot relative to the tag from each camera
+        // ArrayList<Pose3d> tagPoses = new ArrayList<>(); // A list to hold the poses of the robot relative to the tag from each camera
 
-        for (int i = 0; i < numCams; i++) { // Iterate through each camera
+        // for (int i = 0; i < numCams; i++) { // Iterate through each camera
 
-            if (cameras[i].getCameraType() != Camera.Type.APRIL_TAG) { // Skip cameras that are not AprilTag cameras
-                continue;
-            }
+        //     if (cameras[i].getCameraType() != Camera.Type.APRIL_TAG) { // Skip cameras that are not AprilTag cameras
+        //         continue;
+        //     }
 
-            tagPoses.add(cameras[i].getBotRelativeToTag(tagID)); // Add the robot pose relative to the tag from the camera to the list
-        }
+        //     tagPoses.add(cameras[i].getBotRelativeToTag(tagID)); // Add the robot pose relative to the tag from the camera to the list
+        // }
 
-        return averagePoses(tagPoses); // Return the averaged robot pose relative to the tag
+        // return averagePoses(tagPoses); // Return the averaged robot pose relative to the tag
+        return null;
     }
 
     /**
@@ -169,7 +169,7 @@ public class VisionSubsystem extends SubsystemBase{
      * @return The Pose3d of the nearest tag relative to the robot, or null if no tags are visible.
      */
     public Pose3d getNearestTag() {
-        List<Integer> visibleTags = getAllVisibleTags(); // Get the list of all visible tags
+        List<Integer> visibleTags = getAllVisibleTagIDs(); // Get the list of all visible tags
 
         List<Pose3d> tagPoses = new ArrayList<>(); // A list to hold the poses of the visible tags
 
@@ -212,6 +212,44 @@ public class VisionSubsystem extends SubsystemBase{
     }
 
     /**
+     * Get the nearest object of the specified type
+     */
+    public Pose3d getNearestObject(Camera.Type type) {
+        ArrayList<Pose3d> poses = new ArrayList<>(); // Initialize the list of poses
+
+        for (int i = 0; i < numCams; i++) { // Iterate through each camera
+
+            if (cameras[i].getCameraType() != type) { // Skip cameras that are not of the specified type
+                continue;
+            }
+
+            poses.addAll(cameras[i].getObjects(type)); // Add the poses from the camera to the list
+        }
+
+        if (poses.isEmpty()) { // If there are no valid poses, return null
+            return null;
+        }
+
+        Pose3d closestPose = poses.get(0); // Set the first one as the closest pose
+        double closestDistance = Math.sqrt(Math.pow(closestPose.getX(), 2)
+                                         + Math.pow(closestPose.getY(), 2)); // Get its distance via the pythagorean theorem
+        
+        for (int i = 1; i < poses.size(); i++) { // Iterate through every pose besides the first one
+
+            Pose3d tryPose = poses.get(i); // Get the new pose to compare to
+            double tryPoseDistance = Math.sqrt(Math.pow(tryPose.getX(), 2)
+                                             + Math.pow(tryPose.getY(), 2)); // Get its distance via the pythagorean theorem
+
+            if (tryPoseDistance < closestDistance) { // If the new distance is closer than the last closest
+                closestDistance = tryPoseDistance; // Set the new closest distance
+                closestPose = tryPose; // Update the best pose
+            }
+        }
+
+        return closestPose; // Return the closest pose
+    }
+
+    /**
      * Updates the results from all cameras.
      */
     private void updateResults() {
@@ -220,8 +258,17 @@ public class VisionSubsystem extends SubsystemBase{
         }
     }
 
+    private int clock;
+
     @Override
     public void periodic() {
         updateResults(); // Update camera results periodically
+        
+        clock++;
+
+        if (clock >= 10) {
+            clock = 0;
+            System.out.println(getNearestObject(Camera.Type.CARROT));
+        }
     }
 }
