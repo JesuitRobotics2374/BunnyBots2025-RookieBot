@@ -40,6 +40,7 @@ public class IndexerSubsystem extends SubsystemBase {
   private CoreCANrange intakeSensor;
   private CoreCANrange shooterSensor;
   private boolean detectionState;
+  private boolean detectionStateOut;
 
 
   public IndexerSubsystem() {
@@ -128,7 +129,7 @@ public class IndexerSubsystem extends SubsystemBase {
    * @return true = carrot is loaded.
    */
  
-  public void updateDetectionState(){
+  public void updateDetectionStateIn(){
 
     if (detectionState != intakeSensor.getIsDetected().getValue()){
 
@@ -144,6 +145,31 @@ public class IndexerSubsystem extends SubsystemBase {
 
   } 
 
+  public void updateDetectionStateOut(){
+
+    if (detectionStateOut != shooterSensor.getIsDetected().getValue()){
+
+      if (detectionStateOut == true){
+
+        numOfCarrots--;
+
+      } 
+  
+    }
+
+    detectionStateOut = shooterSensor.getIsDetected().getValue();
+
+  }
+
+
+  public void updateAll(){
+
+    updateDetectionStateIn();
+    updateDetectionStateOut();
+    // add more here if necessary (updating other vars)
+
+  }
+
   public void shootCarrots() {
     
 
@@ -155,7 +181,7 @@ public class IndexerSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    updateDetectionState();
+    updateAll();
     
 
   }
