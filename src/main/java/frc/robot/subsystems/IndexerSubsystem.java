@@ -7,6 +7,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix6.hardware.TalonFX;
 import frc.robot.Constants; // hey theres a constants file in the shooter branch this references that
@@ -90,21 +91,35 @@ public class IndexerSubsystem extends SubsystemBase {
   // control.set(0);
   // }
 
-  public void setBeltSpeed(int speed) {
-    entranceControl.set(speed);
-    exitControl.set(speed);
+  public void stop() {
+    entranceControl.set(0);
+    exitControl.set(0);
+  }
+
+  public void setBeltSpeed(double speed) {
+      entranceControl.set(speed);
+      exitControl.set(speed);
   }
 
   public Command moveBelt() {
-    return FunctionalCommand(
+    return new FunctionalCommand(
       //On init
       () -> {},
       //execute
       () -> {
-        setBeltSpeed(0.2);
-      }
+        this.setBeltSpeed(0.2);
+      },
       //interrupted
-      interrupt -> 
+      interrupted -> {
+        this.stop();
+      },
+
+      //end command when:
+      null, //for now fix later
+      
+      //requirement
+      this
+    );
   }
 
   /**
