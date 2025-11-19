@@ -46,10 +46,10 @@ public class IndexerSubsystem extends SubsystemBase {
 
   public IndexerSubsystem() {
     numOfCarrots = 0;
-    this.entranceControl = new TalonFX(6, "FastFD"); // change id when necessary
-    this.exitControl = new TalonFX(7, "FastFD"); // change id when necessary
-    this.intakeSensor = new CoreCANrange(67, "FastFD"); // change id when necessary 
-    this.shooterSensor = new CoreCANrange(67, "FastFD"); // change id when necessary 
+    this.entranceControl = new TalonFX(16, "rio"); // change id when necessary
+    this.exitControl = new TalonFX(5, "rio"); // change id when necessary
+    //this.intakeSensor = new CoreCANrange(67, "FastFD"); // change id when necessary 
+    //this.shooterSensor = new CoreCANrange(67, "FastFD"); // change id when necessary 
     
 
   }

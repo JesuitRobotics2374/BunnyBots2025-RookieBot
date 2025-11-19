@@ -27,8 +27,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public ShooterSubsystem() {
 
-    this.bottomWheel = new TalonFX(1, "FastFD"); // change id when necessary
-    this.topWheel = new TalonFX(2, "FastFD"); //change id when necessary
+    this.bottomWheel = new TalonFX(19, "rio"); // change id when necessary
+    this.topWheel = new TalonFX(51, "rio"); //change id when necessary
     
   }
 
