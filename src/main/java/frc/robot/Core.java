@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.commands.CarrotAlign;
 import frc.robot.commands.ExactAlign;
 import frc.robot.commands.TurnCommand;
 import frc.robot.generated.SwerveeTunerConstants;
@@ -32,10 +33,10 @@ import frc.robot.utils.Target.Side;
 import frc.robot.utils.Target.TagRelativePose;
 
 public class Core {
-    private double MaxSpeed = SwerveeTunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.8; // kSpeedAt12Volts desired top speed
+    private double MaxSpeed = SwerveeTunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.6; // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-    private static final double TranslationalAccelerationLimit = 6; // meters per second^2
-    private static final double RotationalAccelerationLimit = Math.PI * 3.5; // radians per second^2
+    private static final double TranslationalAccelerationLimit = Integer.MAX_VALUE; // meters per second^2
+    private static final double RotationalAccelerationLimit = 100000 * Math.PI * 3.5; // radians per second^2
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -88,11 +89,13 @@ public class Core {
         );
 
         TagRelativePose testingTagRelativePose = new TagRelativePose(15, 1
-        , 0, 0.0); // idk what units this is in - x is left
+        , 0, 0); // idk what units this is in - x is left
         // right & y is front back
         // currently working with oscillation
         driveController.a().onTrue(new ExactAlign(drivetrain, visionSubsystem, testingTagRelativePose));
         driveController.b().onTrue(visionSubsystem.runOnce(() -> visionSubsystem.getTagRelativeToBot(15)));
+
+        driveController.x().onTrue(new CarrotAlign(drivetrain, visionSubsystem, testingTagRelativePose));
     
         // driveController.x().onTrue(new SequentialCommandGroup(
         //     new ExactAlign(drivetrain, target.getTagRelativePose())

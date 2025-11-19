@@ -110,9 +110,8 @@ public class CarrotAlign extends Command {
 
         finishedOverride = false;
 
-        System.out.println("EXACTALIGN STARTED");
-        System.out.println("Tag ID: " + tagId);
-
+        System.out.println("CARROTALIGN STARTED");
+       
         // Reset controllers and rate limiters
         xController.reset();
         yController.reset();
@@ -279,9 +278,9 @@ public class CarrotAlign extends Command {
         //     .withVelocityY(0)
         //     .withRotationalRate(0)));
         if (interrupted) {
-            System.out.println("EXACTALIGN INTERRUPTED");
+            System.out.println("CARROTALIGN INTERRUPTED");
         } else {
-            System.out.println("EXACTALIGN FINISHED");
+            System.out.println("CARROTALIGN FINISHED");
         }
     }
 

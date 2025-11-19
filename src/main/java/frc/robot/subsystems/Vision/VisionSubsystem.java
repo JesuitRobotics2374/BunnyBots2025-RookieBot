@@ -266,9 +266,9 @@ public class VisionSubsystem extends SubsystemBase{
         
         clock++;
 
-        if (clock >= 10) {
+        if (clock >= 25) {
             clock = 0;
-            System.out.println(getNearestObject(Camera.Type.CARROT));
+            //System.out.println(getNearestObject(Camera.Type.CARROT));
         }
     }
 }

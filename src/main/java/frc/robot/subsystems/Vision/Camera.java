@@ -128,13 +128,16 @@ public class Camera {
      * @return Adjusted Pose3d representing the robot's pose on the field.
      */
     private Pose3d adjustPose(Transform3d rawPose) {
-        if (rawPose == null) { // If the raw pose is null, return null
-            return null;
-        }
+        // if (rawPose == null) { // If the raw pose is null, return null
+        //     return null;
+        // }
 
-        Pose3d p = new Pose3d(rawPose.getTranslation(), rawPose.getRotation()); // Convert Transform3d to Pose3d
+        // Pose3d p = new Pose3d(rawPose.getTranslation(), rawPose.getRotation()); // Convert Transform3d to Pose3d
 
-        return p.transformBy(robotToCameraTransform); // Adjust the raw pose by adding the robot-to-camera transform and return it
+        // return p.transformBy(robotToCameraTransform); // Adjust the raw pose by adding the robot-to-camera transform and return it
+        
+        Transform3d adjustedPose = rawPose.plus(robotToCameraTransform); // Adjust the raw pose by adding the robot-to-camera transform, TODO: CHECK IF THIS NEEDS TO BE SUBTRACTED
+        return new Pose3d(adjustedPose.getTranslation(), adjustedPose.getRotation()); // Return the adjusted pose as a Pose3d
     }
 
     /**
@@ -258,15 +261,11 @@ public class Camera {
             return poses;
         }   
 
-        System.out.println("latest result targets? " + latestResult.hasTargets());
-        System.out.println("latest result size " + latestResult.getTargets().size());
-
         if (latestResult == null || !latestResult.hasTargets()) { // If there are no targets in the latest result, return the empty list
             return poses;
         }
 
         for (PhotonTrackedTarget target : latestResult.getTargets()) { // Iterate through each target and add it
-            System.out.println("Target detected with area: " + target.getArea());
             Pose3d pose = adjustPose(calculateObjectPose(target.getArea(), target.getYaw(), target.getPitch()));
             
             if (pose == null) { // Skip null poses
