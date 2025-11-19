@@ -1,6 +1,5 @@
 package frc.robot;
 
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -8,6 +7,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 
 public class Constants {
+
+    final public static double CONVEYOR_TARGET_SPEED = 0.2; // wth formatting this like we did with shooter gives errors
   
     public final static double TARGET_SHOOTER_SPEED = 0.2; // change later
     public final static double SHOOTER_MAX_RPM = 6000; //incorrect, change later 
