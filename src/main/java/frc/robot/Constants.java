@@ -7,6 +7,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 
 public class Constants {
+  
+    final public static double INTAKE_RETRACTED_POSITION = 0;
+    final public static double INTAKE_DEPLOYED_POSITION = 0.3;
 
     final public static double CONVEYOR_TARGET_SPEED = 0.2; // wth formatting this like we did with shooter gives errors
   
