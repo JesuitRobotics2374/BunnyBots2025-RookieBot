@@ -34,7 +34,7 @@ public class ExactAlign extends Command {
     // Position tolerance thresholds
     private static final double X_TOLERANCE = 0.05; // meters
     private static final double Y_TOLERANCE = 0.05; // meters
-    private static final double YAW_TOLERANCE = 3 * Math.PI / 180; // radians
+    private static final double YAW_TOLERANCE = 5 * Math.PI / 180; // radians
 
     // Maximum output valuess
     private static final double MAX_LINEAR_SPEED = 2.4;
@@ -145,7 +145,6 @@ public class ExactAlign extends Command {
         dtheta = 0;
 
         Pose3d currentPose = vision.getTagRelativeToBot(tagId);
-        System.out.println(currentPose);
         Pose3d usePose = null;
 
         if (currentPose == null) {
@@ -237,6 +236,11 @@ public class ExactAlign extends Command {
         dy = yRateLimiter.calculate(dy);
         dtheta = yawRateLimiter.calculate(dtheta);
 
+        if (Math.abs(error_yaw) > 90 * Math.PI/180) {  
+            System.out.println("fixing yaw");
+            error_yaw = Math.PI - Math.abs(error_yaw);
+        }
+
         // Zero out commands if we're within tolerance
         boolean xTollerenace = Math.abs(error_x) < X_TOLERANCE;
         boolean yTollerenace = Math.abs(error_y) < Y_TOLERANCE;
@@ -249,12 +253,17 @@ public class ExactAlign extends Command {
         if (thetaTollerenace)
             dtheta = 0;
 
+
         // // Set the drive request
         // if (clock >= 20) {
         //     // System.out.println("Drive Control: dx: " + dx + " dy: " + dy);
         //     System.out.println("cr range: " + drivetrain.getForwardRangeCombined());
         // }
 
+        if (xTollerenace && yTollerenace && thetaTollerenace) {
+            finishedOverride = true;
+            end(true);
+        }
     }
 
     @Override

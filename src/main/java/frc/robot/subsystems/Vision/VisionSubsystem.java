@@ -18,7 +18,7 @@ public class VisionSubsystem extends SubsystemBase{
     
     private int numCams = Constants.numberOfCams; // The number of cameras on the robot
     private Transform3d[] cameraTransforms = {
-        new Transform3d(0.37, 0,  0.31, new Rotation3d(0, 40.73, 0)),
+        new Transform3d(0.37, 0,  0.31, new Rotation3d(0, 40.73 * Math.PI/180, 0)),
         new Transform3d(0, 0, 0, new Rotation3d(0, 0, 0))
                                               };
     private Camera.Type[] types = {Camera.Type.APRIL_TAG, Camera.Type.CARROT};
@@ -138,6 +138,8 @@ public class VisionSubsystem extends SubsystemBase{
 
             tagPoses.add(cameras[i].getTagRelativeToBot(tagID)); // Add the tag pose from the camera to the list
         }
+
+        System.out.println(averagePoses(tagPoses));
         
         return averagePoses(tagPoses); // Return the averaged tag pose
     }

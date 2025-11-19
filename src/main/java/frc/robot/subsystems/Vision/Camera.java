@@ -136,8 +136,43 @@ public class Camera {
 
         // return p.transformBy(robotToCameraTransform); // Adjust the raw pose by adding the robot-to-camera transform and return it
         
+        if (type == Type.APRIL_TAG) {
+            rawPose = normalizeYaw(rawPose);
+        }
+
+        if (robotToCameraTransform.getRotation().getY() != 0) {
+            double XPitchFix = rawPose.getTranslation().getX() * Math.cos(robotToCameraTransform.getRotation().getY());
+
+            Translation3d pitchFixTr = rawPose.getTranslation();
+
+            rawPose = new Transform3d(XPitchFix, pitchFixTr.getY(), pitchFixTr.getZ(), rawPose.getRotation());
+        }
+        
         Transform3d adjustedPose = rawPose.plus(robotToCameraTransform); // Adjust the raw pose by adding the robot-to-camera transform, TODO: CHECK IF THIS NEEDS TO BE SUBTRACTED
+        
         return new Pose3d(adjustedPose.getTranslation(), adjustedPose.getRotation()); // Return the adjusted pose as a Pose3d
+    }
+
+    /**
+     * Normalizes the yaw of the given transform3d so that the April Tag values given by Photon do not have 180° as centered
+     * 
+     * @param rawTransform - The raw, not normalized transform3d
+     * @return The normalized transform3d
+     */
+    private Transform3d normalizeYaw(Transform3d rawTransform) {
+        double yawValue = rawTransform.getRotation().getZ();
+
+        if (Math.abs(yawValue) > 90 * Math.PI/180) { 
+            yawValue = Math.PI - Math.abs(yawValue) * -1 * (yawValue/Math.abs(yawValue));
+        }
+        else {
+            return rawTransform;
+        }
+
+        Rotation3d rotation = rawTransform.getRotation();
+
+        return new Transform3d(rawTransform.getTranslation(),
+                               new Rotation3d(rotation.getX(), rotation.getY(), yawValue));
     }
 
     /**
