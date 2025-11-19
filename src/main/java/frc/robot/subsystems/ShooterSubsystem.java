@@ -80,39 +80,22 @@ public class ShooterSubsystem extends SubsystemBase {
 
   }
 
-  public Command shootCarrots(double rpmValue) {
+  public Command stopShooter() {
+    return new InstantCommand(() -> this.stop(), this);
+  }
+
+  public Command shootCarrots() {
       
-      if (isShooterReady(true)) { //JUST FOR NOW MUST FIX
+      //if (isShooterReady(true)) { //JUST FOR NOW MUST FIX
 
-        return new FunctionalCommand(
-                          //on init
-                          () -> {},
-                           
-                          //on execute
-                          () -> {
-                            this.setSpeedShooter(targetSpeed);
-                          },
+        return new InstantCommand(() -> this.setSpeedShooter(targetSpeed), this);
 
-                          //when stopped
-                          interrupted -> {
-                            this.stop();
-                          },
+      //}
 
-                          //end command when:
-                          null //for now FIX LATER
-                          ,
-
-                          this);
-
-
-
-
-      }
-
-      else {
-        System.out.println("SHOOTER NOT READY!");
-        return null;
-      }
+      // else {
+      //   System.out.println("SHOOTER NOT READY!");
+      //   return null;
+      // }
       
     // fix later
   }
