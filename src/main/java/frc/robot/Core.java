@@ -88,7 +88,7 @@ public class Core {
             })
         );
 
-        TagRelativePose testingTagRelativePose = new TagRelativePose(15, 1
+        TagRelativePose testingTagRelativePose = new TagRelativePose(15, 0.5
         , 0, 0); // idk what units this is in - x is left
         // right & y is front back
         // currently working with oscillation

@@ -33,7 +33,7 @@ public class ExactAlign extends Command {
 
     // Position tolerance thresholds
     private static final double X_TOLERANCE = 0.05; // meters
-    private static final double Y_TOLERANCE = 0.05; // meters
+    private static final double Y_TOLERANCE = 0.025; // meters
     private static final double YAW_TOLERANCE = 5 * Math.PI / 180; // radians
 
     // Maximum output valuess
