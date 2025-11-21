@@ -33,7 +33,9 @@ public class ShooterSubsystem extends SubsystemBase {
     
   }
 
-  double targetSpeed = Constants.TARGET_SHOOTER_SPEED;
+  double bottomWheelSpeed = Constants.TARGET_BOTTOM_SHOOTER_SPEED;
+  double topWheelSpeed = Constants.TARGET_TOP_SHOOTER_SPEED;
+
   // double maxRPM = Constants.SHOOTER_MAX_RPM;
   // double maxRPS = maxRPM / 60;
 
@@ -53,13 +55,14 @@ public class ShooterSubsystem extends SubsystemBase {
    * Moves both motors in opposite direction to shoot carrot.
    * @param speed
    */
-  public void setSpeedShooter(double speed) {
-    bottomWheel.set(speed);
-    topWheel.set(-speed);
+  public void setSpeedShooter() {
+    bottomWheel.set(bottomWheelSpeed);
+    topWheel.set(topWheelSpeed);
   }
 
   public void stop() {
-    setSpeedShooter(0);
+    bottomWheel.stopMotor();
+    topWheel.stopMotor();
   }
 
   public boolean isShooterReady(boolean isCarrotLoaded) { // fix when indexer is made
@@ -87,7 +90,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public Command shootCarrots() {
-    this.setSpeedShooter(targetSpeed);
+    this.setSpeedShooter();
     return null;
   }
 
