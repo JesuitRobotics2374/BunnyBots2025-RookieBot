@@ -6,6 +6,7 @@ package frc.robot.utils;
 
 import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.hardware.core.CoreCANrange;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 
@@ -31,7 +32,7 @@ public class Devices {
     public static final TalonFX SHOOTER_BOTTOM_WHEEL = new TalonFX(SHOOTER_BOTTOM_WHEEL_ID, CANBUS_NAME);
     public static final TalonFX SHOOTER_TOP_WHEEL = new TalonFX(SHOOTER_TOP_WHEEL_ID, CANBUS_NAME);
     
-    public static final CANrange SHOOTER_CANRANGE = new CANrange(SHOOTER_CANRANGE_ID, CANBUS_NAME);
+    public static final CoreCANrange SHOOTER_CANRANGE = new CoreCANrange(SHOOTER_CANRANGE_ID, CANBUS_NAME);
 
     //Indexer
     public static final int INDEXER_ENTERANCE_MOTOR_ID = 16; 
@@ -42,7 +43,7 @@ public class Devices {
     public static final TalonFX INDEXER_ENTERANCE_MOTOR = new TalonFX(16, CANBUS_NAME);
     public static final TalonFX INDEXER_EXIT_MOTOR = new TalonFX(5, CANBUS_NAME);
 
-    public static final CANrange INDEXER_ENTERANCE_CANRANGE = new CANrange(INDEXER_ENTERANCE_SENSOR_ID, CANBUS_NAME); //change id later
-    public static final CANrange INDEXER_EXIT_CANRANGE = new CANrange(INDEXER_EXIT_SENSOR_ID, CANBUS_NAME); //change id later
+    public static final CoreCANrange INDEXER_ENTERANCE_CANRANGE = new CoreCANrange(INDEXER_ENTERANCE_SENSOR_ID, CANBUS_NAME); //change id later
+    public static final CoreCANrange INDEXER_EXIT_CANRANGE = new CoreCANrange(INDEXER_EXIT_SENSOR_ID, CANBUS_NAME); //change id later
     
 }

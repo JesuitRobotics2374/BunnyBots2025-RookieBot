@@ -38,7 +38,7 @@ public class IndexerSubsystem extends SubsystemBase {
   private TalonFX entranceControl;
   private TalonFX exitControl;
   private CoreCANrange intakeSensor;
-  private CoreCANrange shooterSensor;
+  private CoreCANrange exitSensor;
   private boolean detectionState;
   private boolean detectionStateOut;
   private double m_runSpeed;
@@ -48,10 +48,8 @@ public class IndexerSubsystem extends SubsystemBase {
     m_runSpeed = 0.1; // might be to slow
     this.entranceControl = Devices.INDEXER_ENTERANCE_MOTOR; // change id when necessary
     this.exitControl = Devices.INDEXER_EXIT_MOTOR; // change id when necessary
-    // this.intakeSensor = new CoreCANrange(67, "FastFD"); // change id when
-    // necessary
-    // this.shooterSensor = new CoreCANrange(67, "FastFD"); // change id when
-    // necessary
+    this.intakeSensor = Devices.INDEXER_ENTERANCE_CANRANGE;
+    this.exitSensor = Devices.INDEXER_EXIT_CANRANGE;
 
   }
 
@@ -126,31 +124,31 @@ public class IndexerSubsystem extends SubsystemBase {
    * @return true = carrot is loaded.
    */ 
   // do not delete this
-  // public void updateDetectionStateIn() {
-  //   if (detectionState != intakeSensor.getIsDetected().getValue()) {
-  //     if (detectionState == false) {
-  //       numOfCarrots++;
-  //     }
-  //   }
-  //   detectionState = intakeSensor.getIsDetected().getValue();
-  // }
+  public void updateDetectionStateIn() {
+    if (detectionState != intakeSensor.getIsDetected().getValue()) {
+      if (detectionState == false) {
+        numOfCarrots++;
+      }
+    }
+    detectionState = intakeSensor.getIsDetected().getValue();
+  }
 
-  // public void updateDetectionStateOut() {
-  //   if (detectionStateOut != shooterSensor.getIsDetected().getValue()) {
-  //     if (detectionStateOut == true) {
-  //       numOfCarrots--;
-  //     }
-  //   }
-  //   detectionStateOut = shooterSensor.getIsDetected().getValue();
-  // }
+  public void updateDetectionStateOut() {
+    if (detectionStateOut != exitSensor.getIsDetected().getValue()) {
+      if (detectionStateOut == true) {
+        numOfCarrots--;
+      }
+    }
+    detectionStateOut = exitSensor.getIsDetected().getValue();
+  }
 
-  // public void updateAll() {
+  public void updateAll() {
 
-  //   updateDetectionStateIn();
-  //   updateDetectionStateOut();
-  //   // add more here if necessary (updating other vars)
+    updateDetectionStateIn();
+    updateDetectionStateOut();
+    // add more here if necessary (updating other vars)
 
-  // }
+  }
 
   public void advance() {
 
