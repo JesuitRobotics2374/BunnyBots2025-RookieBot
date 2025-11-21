@@ -17,21 +17,18 @@ import frc.robot.utils.Devices;
 import com.ctre.phoenix6.hardware.core.CoreCANrange;
 import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.CANBus;      // only if specifying CAN bus name
+import com.ctre.phoenix6.CANBus; // only if specifying CAN bus name
 
-
-
-
-
-/** todo:
+/**
+ * todo:
  * Make control work
  * Set the conveyor belt move (public void shootcarrots)
  * 
  * actually do things with the carrot value (letsgo i got that to work :)
  * 
- *  
  * 
-*/
+ * 
+ */
 
 public class IndexerSubsystem extends SubsystemBase {
   /** Creates a new IndexerSubsystem. */
@@ -39,20 +36,22 @@ public class IndexerSubsystem extends SubsystemBase {
   private boolean isIndexFull;
   private int numOfCarrots;
   private TalonFX entranceControl;
-  private TalonFX exitControl;  
+  private TalonFX exitControl;
   private CoreCANrange intakeSensor;
   private CoreCANrange shooterSensor;
   private boolean detectionState;
   private boolean detectionStateOut;
-
+  private double m_runSpeed;
 
   public IndexerSubsystem() {
     numOfCarrots = 0;
+    m_runSpeed = 0.1; // might be to slow
     this.entranceControl = Devices.INDEXER_ENTERANCE_MOTOR; // change id when necessary
     this.exitControl = Devices.INDEXER_EXIT_MOTOR; // change id when necessary
-    //this.intakeSensor = new CoreCANrange(67, "FastFD"); // change id when necessary 
-    //this.shooterSensor = new CoreCANrange(67, "FastFD"); // change id when necessary 
-    
+    // this.intakeSensor = new CoreCANrange(67, "FastFD"); // change id when
+    // necessary
+    // this.shooterSensor = new CoreCANrange(67, "FastFD"); // change id when
+    // necessary
 
   }
 
@@ -74,8 +73,7 @@ public class IndexerSubsystem extends SubsystemBase {
 
     if (getNumOfCarrots() == 4) {
       isIndexFull = true;
-    }
-    else {
+    } else {
       isIndexFull = false;
     }
 
@@ -83,14 +81,16 @@ public class IndexerSubsystem extends SubsystemBase {
   } // true = four carrots in indexer {}
 
   // /**
-  //  * Loads carrot into shooter.
-  //  * 
-  //  * @param speed The speed of the motor when loading.
-  //  */
+  // * Loads carrot into shooter.
+  // *
+  // * @param speed The speed of the motor when loading.
+  // */
   // public void loadCarrot(int speed) {
-  // control.set(0.2); // goal of this func is to create room in conveyor belt for more carrots (move conveyor for short amount of time then turn off)  
-  // for (int i = 0; i<10000; i++ /*edit value later depending on how long we want this to go */){
-  //     continue;
+  // control.set(0.2); // goal of this func is to create room in conveyor belt for
+  // more carrots (move conveyor for short amount of time then turn off)
+  // for (int i = 0; i<10000; i++ /*edit value later depending on how long we want
+  // this to go */){
+  // continue;
   // }
   // control.set(0);
   // }
@@ -100,79 +100,70 @@ public class IndexerSubsystem extends SubsystemBase {
     exitControl.set(0);
   }
 
-  public void setBeltSpeed(double speed) {
-      entranceControl.set(speed);
-      exitControl.set(speed);
+  private void setBeltSpeed(double speed) {
+    entranceControl.set(speed);
+    exitControl.set(speed);
   }
 
-  public Command moveBelt() {
-    return new InstantCommand(() -> this.setBeltSpeed(0.1), this);
+  public Command Advance() {
+    setBeltSpeed(m_runSpeed);
+        return null;
   }
 
-  public Command stopBelt() {
-    return new InstantCommand(() -> this.stop(), this);
+  public Command Retreat() {
+    setBeltSpeed(-m_runSpeed);
+        return null;
+  }
+
+  public Command Halt() {
+    stop();
+        return null;
   }
 
   /**
    * Tells us if the carrot is loaded.
    * 
    * @return true = carrot is loaded.
-   */
- 
-  public void updateDetectionStateIn(){
+   */ 
+  // do not delete this
+  // public void updateDetectionStateIn() {
+  //   if (detectionState != intakeSensor.getIsDetected().getValue()) {
+  //     if (detectionState == false) {
+  //       numOfCarrots++;
+  //     }
+  //   }
+  //   detectionState = intakeSensor.getIsDetected().getValue();
+  // }
 
-    if (detectionState != intakeSensor.getIsDetected().getValue()){
+  // public void updateDetectionStateOut() {
+  //   if (detectionStateOut != shooterSensor.getIsDetected().getValue()) {
+  //     if (detectionStateOut == true) {
+  //       numOfCarrots--;
+  //     }
+  //   }
+  //   detectionStateOut = shooterSensor.getIsDetected().getValue();
+  // }
 
-      if (detectionState == false){
+  // public void updateAll() {
 
-        numOfCarrots++;
+  //   updateDetectionStateIn();
+  //   updateDetectionStateOut();
+  //   // add more here if necessary (updating other vars)
 
-      } 
-  
-    }
+  // }
 
-    detectionState = intakeSensor.getIsDetected().getValue();
+  public void advance() {
 
-  } 
-
-  public void updateDetectionStateOut(){
-
-    if (detectionStateOut != shooterSensor.getIsDetected().getValue()){
-
-      if (detectionStateOut == true){
-
-        numOfCarrots--;
-
-      } 
-  
-    }
-
-    detectionStateOut = shooterSensor.getIsDetected().getValue();
-
-  }
-
-
-  public void updateAll(){
-
-    updateDetectionStateIn();
-    updateDetectionStateOut();
-    // add more here if necessary (updating other vars)
-
-  }
-
-  public void shootCarrots() {
-    
-
-    exitControl.set(Constants.CONVEYOR_TARGET_SPEED); //just a placeholder for now
-    // tihs will run the conveyor belt for a longer time than usual to make sure all carrots are shot, then we can go back to getting carrot!
+    exitControl.set(Constants.CONVEYOR_TARGET_SPEED); // just a placeholder for now
+    // tihs will run the conveyor belt for a longer time than usual to make sure all
+    // carrots are shot, then we can go back to getting carrot!
 
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    updateAll();
-    
+    // updateAll();
 
   }
 }
