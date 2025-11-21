@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.utils.Devices;
 
 public class IntakeSubsystem extends SubsystemBase {
 
@@ -29,7 +30,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   /** Initializer - runs when class is created. */
   public IntakeSubsystem() {
-    intakeMotor = new SparkMax(6, MotorType.kBrushless);
+    intakeMotor = Devices.INTAKE_MOTOR;
     SparkMaxConfig config = new SparkMaxConfig();
     config.idleMode(IdleMode.kCoast);
 

@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix6.hardware.TalonFX;
 import frc.robot.Constants; // hey theres a constants file in the shooter branch this references that
+import frc.robot.utils.Devices;
+
 import com.ctre.phoenix6.hardware.core.CoreCANrange;
 import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.StatusSignal;
@@ -46,8 +48,8 @@ public class IndexerSubsystem extends SubsystemBase {
 
   public IndexerSubsystem() {
     numOfCarrots = 0;
-    this.entranceControl = new TalonFX(16, "rio"); // change id when necessary
-    this.exitControl = new TalonFX(5, "rio"); // change id when necessary
+    this.entranceControl = Devices.INDEXER_ENTERANCE_MOTOR; // change id when necessary
+    this.exitControl = Devices.INDEXER_EXIT_MOTOR; // change id when necessary
     //this.intakeSensor = new CoreCANrange(67, "FastFD"); // change id when necessary 
     //this.shooterSensor = new CoreCANrange(67, "FastFD"); // change id when necessary 
     
