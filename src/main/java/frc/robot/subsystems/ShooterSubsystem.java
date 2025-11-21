@@ -14,6 +14,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.*;
 import frc.robot.Constants;
+import frc.robot.utils.Devices;
 
 
 /*
@@ -27,8 +28,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public ShooterSubsystem() {
 
-    this.bottomWheel = new TalonFX(19, "rio"); // change id when necessary
-    this.topWheel = new TalonFX(51, "rio"); //change id when necessary
+    this.bottomWheel = Devices.SHOOTER_BOTTOM_WHEEL;
+    this.topWheel = Devices.SHOOTER_TOP_WHEEL;
     
   }
 
@@ -81,23 +82,13 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public Command stopShooter() {
-    return new InstantCommand(() -> this.stop(), this);
+    this.stop();
+    return null;
   }
 
   public Command shootCarrots() {
-      
-      //if (isShooterReady(true)) { //JUST FOR NOW MUST FIX
-
-        return new InstantCommand(() -> this.setSpeedShooter(targetSpeed), this);
-
-      //}
-
-      // else {
-      //   System.out.println("SHOOTER NOT READY!");
-      //   return null;
-      // }
-      
-    // fix later
+    this.setSpeedShooter(targetSpeed);
+    return null;
   }
 
   @Override
