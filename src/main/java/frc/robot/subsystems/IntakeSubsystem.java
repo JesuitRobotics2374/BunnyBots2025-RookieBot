@@ -17,6 +17,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -38,24 +39,9 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   /**
-   * Deploy the intake (put the intake down).
-   * @param deployed Tells if the intake is deployed. true = down.
-   */
-  // public void setIntakeDeployed(boolean deployed) {
-  //   MotionMagicVoltage m_request;
-  //   if (deployed) {
-  //     m_request = new MotionMagicVoltage(Constants.INTAKE_DEPLOYED_POSITION);
-  //     intakeDeployed = true;
-  //   } else {
-  //     m_request = new MotionMagicVoltage(Constants.INTAKE_RETRACTED_POSITION);
-  //     intakeDeployed = false;
-  //   }
-  // }
-
-  /**
    * Stops intaking.
    */
-  public void stopIntake() {
+  private void stopIntake() {
     intaking = false;
     intakeMotor.stopMotor();
   }
@@ -64,7 +50,7 @@ public class IntakeSubsystem extends SubsystemBase {
    * Purge the intake so it gets rid of carrots.
    * @param speed The speed that the intake will go at.
    */
-  public void purge(double speed) {
+  private void purge(double speed) {
     intaking = false;
     intakeMotor.set(-speed);
   }
@@ -73,7 +59,7 @@ public class IntakeSubsystem extends SubsystemBase {
    * Intake the carrot by spinning the motor.
    * @param speed The speed that the motor will spin at.
    */
-  public void intakeCarrot(double speed) {
+  private void intakeCarrot(double speed) {
     intaking = true;
     intakeMotor.set(speed);
   }
@@ -84,6 +70,21 @@ public class IntakeSubsystem extends SubsystemBase {
    */
   public boolean getIntaking() {
     return intaking;
+  }
+
+  public Command Intake(double speed) {
+    intakeCarrot(speed);
+        return null;
+  }
+
+  public Command Purge(double speed) {
+    purge(speed);
+        return null;
+  }
+
+  public Command Stop() {
+    stopIntake();
+        return null;
   }
 
   @Override

@@ -160,10 +160,15 @@ public class Core {
             new ExactAlign(drivetrain, target.getTagRelativePose())
         ));
 
-        operatorController.a().onTrue(m_ShooterSubsystem.shootCarrots());
-        operatorController.b().onTrue(m_ShooterSubsystem.stopShooter());
-        operatorController.x().onTrue(m_IndexerSubsystem.moveBelt());
-        operatorController.y().onTrue(m_IndexerSubsystem.stopBelt());
+        // operatorController.a().onTrue(m_ShooterSubsystem.shootCarrots());
+        // operatorController.b().onTrue(m_ShooterSubsystem.stopShooter());
+        // operatorController.x().onTrue(m_IndexerSubsystem.moveBelt());
+        // operatorController.y().onTrue(m_IndexerSubsystem.stopBelt());
+
+        operatorController.a().onTrue(m_IntakeSubsystem.Intake(MaxSpeed));
+        operatorController.b().onTrue(m_IntakeSubsystem.Purge(MaxSpeed));
+        operatorController.x().onTrue(m_IntakeSubsystem.Stop());
+        
 
         //driveController.b().onTrue(new InstantCommand(() -> target.cycleLocationRight()));
         //driveController.a().onTrue(new InstantCommand(() -> target.cycleLocationLeft()));
