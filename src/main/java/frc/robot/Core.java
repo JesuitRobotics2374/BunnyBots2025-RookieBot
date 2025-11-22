@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.CarrotAlign;
@@ -33,10 +34,10 @@ import frc.robot.utils.Target.Side;
 import frc.robot.utils.Target.TagRelativePose;
 
 public class Core {
-    private double MaxSpeed = SwerveeTunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.6; // kSpeedAt12Volts desired top speed
+    private double MaxSpeed = SwerveeTunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.85; // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-    private static final double TranslationalAccelerationLimit = Integer.MAX_VALUE; // meters per second^2
-    private static final double RotationalAccelerationLimit = 100000 * Math.PI * 3.5; // radians per second^2
+    private static final double TranslationalAccelerationLimit = 10.4; // meters per second^2
+    private static final double RotationalAccelerationLimit = Math.PI * 6.75; // radians per second^2
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -51,6 +52,8 @@ public class Core {
 
     private final CommandXboxController driveController = new CommandXboxController(0);
     private final CommandXboxController operatorController = new CommandXboxController(1);
+
+    private final CommandJoystick flightstick = new CommandJoystick(2);
 
     public final CommandSwerveDrivetrain drivetrain = SwerveeTunerConstants.createDrivetrain();
     public final VisionSubsystem visionSubsystem = new VisionSubsystem();
@@ -77,9 +80,13 @@ public class Core {
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() -> {
                 double axisScale = getAxisMovementScale();
-                double desiredVelocityX = driveController.getLeftY() * MaxSpeed * axisScale;
-                double desiredVelocityY = driveController.getLeftX() * MaxSpeed * axisScale;
-                double desiredRotationalRate = -driveController.getRightX() * MaxAngularRate * axisScale;
+            //    double desiredVelocityX = driveController.getLeftY() * MaxSpeed * axisScale;
+            //    double desiredVelocityY = driveController.getLeftX() * MaxSpeed * axisScale;
+            //    double desiredRotationalRate = -driveController.getRightX() * MaxAngularRate * axisScale;
+
+                double desiredVelocityX = flightstick.getY() * MaxSpeed * axisScale;
+                double desiredVelocityY = flightstick.getX() * MaxSpeed * axisScale;
+                double desiredRotationalRate = -flightstick.getTwist() * MaxAngularRate * axisScale;
 
                 return drive
                     .withVelocityX(xRateLimiter.calculate(desiredVelocityX)) // Limit translational acceleration forward/backward
@@ -88,12 +95,12 @@ public class Core {
             })
         );
 
-        TagRelativePose testingTagRelativePose = new TagRelativePose(15, 0.5
+        TagRelativePose testingTagRelativePose = new TagRelativePose(15, 0.0
         , 0, 0); // idk what units this is in - x is left
         // right & y is front back
         // currently working with oscillation
         driveController.a().onTrue(new ExactAlign(drivetrain, visionSubsystem, testingTagRelativePose));
-        driveController.b().onTrue(visionSubsystem.runOnce(() -> visionSubsystem.getTagRelativeToBot(15)));
+        //driveController.b().onTrue(visionSubsystem.runOnce(() -> visionSubsystem.getTagRelativeToBot(15)));
 
         driveController.x().onTrue(new CarrotAlign(drivetrain, visionSubsystem, testingTagRelativePose));
     

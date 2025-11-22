@@ -140,7 +140,7 @@ public class Camera {
             rawPose = normalizeYaw(rawPose);
         }
 
-        if (robotToCameraTransform.getRotation().getY() != 0) { //TODO: CHECK IF THIS ACTUALLY WORKS AND ADD COMMENTS
+        if (robotToCameraTransform.getRotation().getY() != 0) {
             double XPitchFix = rawPose.getTranslation().getX() * Math.cos(robotToCameraTransform.getRotation().getY());
 
             Translation3d pitchFixTr = rawPose.getTranslation();
@@ -160,19 +160,19 @@ public class Camera {
      * @return The normalized transform3d
      */
     private Transform3d normalizeYaw(Transform3d rawTransform) {
-        double yawValue = rawTransform.getRotation().getZ(); // Get the current yaw value
+        double yawValue = rawTransform.getRotation().getZ();
 
-        if (Math.abs(yawValue) > 90 * Math.PI/180) { // Greater than 90°
-            yawValue = Math.PI - yawValue; // This normalizes it (TODO: CHECK IF THIS NEEDS TO BE OPPOSITE)
+        if (Math.abs(yawValue) > 90 * Math.PI/180) { 
+            yawValue = Math.PI - Math.abs(yawValue) * -1 * (yawValue/Math.abs(yawValue));
         }
         else {
-            return rawTransform; // No need to normalize it if it is less than 90°
+            return rawTransform;
         }
 
-        Rotation3d rotation = rawTransform.getRotation(); // Get rotation for simplification
+        Rotation3d rotation = rawTransform.getRotation();
 
-        return new Transform3d(rawTransform.getTranslation(), 
-                               new Rotation3d(rotation.getX(), rotation.getY(), yawValue)); // Return same as before but with new yaw value
+        return new Transform3d(rawTransform.getTranslation(),
+                               new Rotation3d(rotation.getX(), rotation.getY(), yawValue));
     }
 
     /**

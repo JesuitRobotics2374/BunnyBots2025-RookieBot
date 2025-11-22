@@ -138,8 +138,6 @@ public class VisionSubsystem extends SubsystemBase{
 
             tagPoses.add(cameras[i].getTagRelativeToBot(tagID)); // Add the tag pose from the camera to the list
         }
-
-        System.out.println(averagePoses(tagPoses));
         
         return averagePoses(tagPoses); // Return the averaged tag pose
     }

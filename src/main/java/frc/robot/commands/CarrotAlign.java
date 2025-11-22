@@ -33,9 +33,9 @@ public class CarrotAlign extends Command {
     private final SlewRateLimiter yawRateLimiter = new SlewRateLimiter(100.0);
 
     // Position tolerance thresholds
-    private static final double X_TOLERANCE = 0.035; // meters
-    private static final double Y_TOLERANCE = 0.02; // meters
-    private static final double YAW_TOLERANCE = 3 * Math.PI / 180; // radians
+    private static final double X_TOLERANCE = 0.05; // meters
+    private static final double Y_TOLERANCE = 0.025; // meters
+    private static final double YAW_TOLERANCE = 5 * Math.PI / 180; // radians
 
     // Maximum output valuess
     private static final double MAX_LINEAR_SPEED = 2.4;
@@ -77,7 +77,7 @@ public class CarrotAlign extends Command {
     private int clock;
 
     public CarrotAlign(CommandSwerveDrivetrain drivetrain, VisionSubsystem visionSubsystem, TagRelativePose tagRelativePose) {
-        System.out.println("Carrot align created");
+        System.out.println("CarrotAlign created");
         finishedOverride = false;
         this.clock = 0;
 
@@ -111,7 +111,7 @@ public class CarrotAlign extends Command {
         finishedOverride = false;
 
         System.out.println("CARROTALIGN STARTED");
-       
+
         // Reset controllers and rate limiters
         xController.reset();
         yController.reset();
@@ -130,7 +130,8 @@ public class CarrotAlign extends Command {
         drivetrain.setControl(driveRequest
                 .withVelocityX(-dx)
                 .withVelocityY(-dy)
-                .withRotationalRate(dtheta));
+                .withRotationalRate(-dtheta)
+                );
 
         // clock++;
 
@@ -144,7 +145,6 @@ public class CarrotAlign extends Command {
         dtheta = 0;
 
         Pose3d currentPose = vision.getNearestObject(Camera.Type.CARROT);
-        System.out.println(currentPose);
         Pose3d usePose = null;
 
         if (currentPose == null) {
@@ -236,17 +236,23 @@ public class CarrotAlign extends Command {
         dy = yRateLimiter.calculate(dy);
         dtheta = yawRateLimiter.calculate(dtheta);
 
+        if (Math.abs(error_yaw) > 90 * Math.PI/180) {  
+            System.out.println("fixing yaw");
+            error_yaw = Math.PI - Math.abs(error_yaw);
+        }
+
         // Zero out commands if we're within tolerance
         boolean xTollerenace = Math.abs(error_x) < X_TOLERANCE;
         boolean yTollerenace = Math.abs(error_y) < Y_TOLERANCE;
         boolean thetaTollerenace = Math.abs(error_yaw) + (0.5 * Math.PI / 180) < YAW_TOLERANCE;
 
-        // if (xTollerenace || drivetrain.getForwardRangeCombined() < 0.33)
-        //     dx = 0;
-        // if (yTollerenace)
-        //     dy = 0;
-        // if (thetaTollerenace)
-        //     dtheta = 0;
+        if (xTollerenace)
+            dx = 0;
+        if (yTollerenace)
+            dy = 0;
+        if (thetaTollerenace)
+            dtheta = 0;
+
 
         // // Set the drive request
         // if (clock >= 20) {
@@ -254,13 +260,10 @@ public class CarrotAlign extends Command {
         //     System.out.println("cr range: " + drivetrain.getForwardRangeCombined());
         // }
 
-        // // Update state for isFinished
-        // if ((xTollerenace || (drivetrain.getForwardRangeCombined() < 0.33)) && yTollerenace && thetaTollerenace) {
-        //     framesAtTarget++;
-        // } else {
-        //     framesAtTarget = 0;
-        // }
-
+        if (xTollerenace && yTollerenace && thetaTollerenace) {
+            finishedOverride = true;
+            end(true);
+        }
     }
 
     @Override
