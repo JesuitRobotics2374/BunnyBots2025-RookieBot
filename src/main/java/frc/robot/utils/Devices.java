@@ -12,38 +12,34 @@ import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.trajectory.ExponentialProfile.State;
 import edu.wpi.first.wpilibj.CAN;
+import frc.robot.generated.TunerConstants;
 
 /** Add your docs here. */
 public class Devices {
 
-    //canbus
-    public static final String CANBUS_NAME_DRIVE = "Default Name";
-    public static final String CANBUS_NAME = "rio";
-
     //Intake
-    public static final int INTAKE_MOTOR_ID = 21; //not true ID change later
-    public static final SparkMax INTAKE_MOTOR = new SparkMax(INTAKE_MOTOR_ID, MotorType.kBrushless);
+    public static final SparkMax INTAKE_MOTOR = new SparkMax(32, MotorType.kBrushless);
 
     //Shooter
     public static final int SHOOTER_BOTTOM_WHEEL_ID = 19; //faster
     public static final int SHOOTER_TOP_WHEEL_ID = 51; //slower
-    public static final int SHOOTER_CANRANGE_ID = 0; //change id later
+    public static final int SHOOTER_CANRANGE_ID = 17; //change id later
 
-    public static final TalonFX SHOOTER_BOTTOM_WHEEL = new TalonFX(SHOOTER_BOTTOM_WHEEL_ID, CANBUS_NAME);
-    public static final TalonFX SHOOTER_TOP_WHEEL = new TalonFX(SHOOTER_TOP_WHEEL_ID, CANBUS_NAME);
+    public static final TalonFX SHOOTER_BOTTOM_WHEEL = new TalonFX(SHOOTER_BOTTOM_WHEEL_ID, "rio");
+    public static final TalonFX SHOOTER_TOP_WHEEL = new TalonFX(SHOOTER_TOP_WHEEL_ID, "rio");
     
-    public static final CoreCANrange SHOOTER_CANRANGE = new CoreCANrange(SHOOTER_CANRANGE_ID, CANBUS_NAME);
+    public static final CoreCANrange SHOOTER_CANRANGE = new CoreCANrange(SHOOTER_CANRANGE_ID, "rio");
 
     //Indexer
     public static final int INDEXER_ENTERANCE_MOTOR_ID = 16; 
-    public static final int INDEXER_ENTERANCE_SENSOR_ID = 0; //not true ID change later
+    public static final int INDEXER_ENTERANCE_SENSOR_ID = 19; //not true ID change later
     public static final int INDEXER_EXIT_MOTOR_ID = 5; 
-    public static final int INDEXER_EXIT_SENSOR_ID = 0; //not true ID change later
+    public static final int INDEXER_EXIT_SENSOR_ID = 27; //not true ID change later
 
-    public static final TalonFX INDEXER_ENTERANCE_MOTOR = new TalonFX(16, CANBUS_NAME);
-    public static final TalonFX INDEXER_EXIT_MOTOR = new TalonFX(5, CANBUS_NAME);
+    public static final TalonFX INDEXER_ENTERANCE_MOTOR = new TalonFX(16, "rio");
+    public static final TalonFX INDEXER_EXIT_MOTOR = new TalonFX(5, "rio");
 
-    public static final CoreCANrange INDEXER_ENTERANCE_CANRANGE = new CoreCANrange(INDEXER_ENTERANCE_SENSOR_ID, CANBUS_NAME); //change id later
-    public static final CoreCANrange INDEXER_EXIT_CANRANGE = new CoreCANrange(INDEXER_EXIT_SENSOR_ID, CANBUS_NAME); //change id later
+    public static final CoreCANrange INDEXER_ENTERANCE_CANRANGE = new CoreCANrange(INDEXER_ENTERANCE_SENSOR_ID, "rio"); //change id later
+    public static final CoreCANrange INDEXER_EXIT_CANRANGE = new CoreCANrange(INDEXER_EXIT_SENSOR_ID, "rio"); //change id later
     
 }

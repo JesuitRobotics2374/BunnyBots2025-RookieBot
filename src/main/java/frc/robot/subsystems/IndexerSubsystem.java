@@ -34,32 +34,39 @@ public class IndexerSubsystem extends SubsystemBase {
   /** Creates a new IndexerSubsystem. */
 
   private boolean isIndexFull;
-  private int numOfCarrots;
-  private TalonFX entranceControl;
-  private TalonFX exitControl;
-  private CoreCANrange intakeSensor;
-  private CoreCANrange exitSensor;
-  private boolean detectionState;
-  private boolean detectionStateOut;
-  private double m_runSpeed;
-
-  public IndexerSubsystem() {
-    numOfCarrots = 0;
-    m_runSpeed = 0.1; // might be to slow
-    this.entranceControl = Devices.INDEXER_ENTERANCE_MOTOR; // change id when necessary
-    this.exitControl = Devices.INDEXER_EXIT_MOTOR; // change id when necessary
-    this.intakeSensor = Devices.INDEXER_ENTERANCE_CANRANGE;
-    this.exitSensor = Devices.INDEXER_EXIT_CANRANGE;
-
-  }
-
-  /**
-   * Shows us the number of carrots in the indexer.
-   * 
-   * @return Integer of the number of carrots.
-   */
-  public int getNumOfCarrots() {
-    return numOfCarrots;
+  private static int numOfCarrots = 0;
+  
+    private TalonFX entranceControl;
+    private TalonFX exitControl;
+  
+    private CoreCANrange intakeSensor;
+    private CoreCANrange exitSensor;
+  
+    private boolean detectionState;
+    private boolean detectionStateOut;
+  
+    private double entranceSpeed;
+    private double exitSpeed;
+  
+    public IndexerSubsystem() {
+  
+      this.entranceControl = Devices.INDEXER_ENTERANCE_MOTOR; // change id when necessary
+      this.exitControl = Devices.INDEXER_EXIT_MOTOR; // change id when necessary
+      this.intakeSensor = Devices.INDEXER_ENTERANCE_CANRANGE;
+      this.exitSensor = Devices.INDEXER_EXIT_CANRANGE;
+  
+      entranceSpeed = Constants.CONVEYER_ENTRANCE_SPEED;
+      exitSpeed = Constants.CONVEYER_EXIT_SPEED;
+  
+    }
+  
+    /**
+     * Shows us the number of carrots in the indexer.
+     * 
+     * @return Integer of the number of carrots.
+     */
+    public static int getNumOfCarrots() {
+      return numOfCarrots;
   }
 
   /**
@@ -98,18 +105,35 @@ public class IndexerSubsystem extends SubsystemBase {
     exitControl.set(0);
   }
 
-  private void setBeltSpeed(double speed) {
-    entranceControl.set(speed);
-    exitControl.set(speed);
+  private void setBeltSpeed() {
+    entranceControl.set(entranceSpeed);
+    exitControl.set(exitSpeed);
   }
 
+
+
+  // public Command Advance() {
+  //   setBeltSpeed();
+  //       return null;
+  // }
+
   public Command Advance() {
-    setBeltSpeed(m_runSpeed);
-        return null;
+    return new FunctionalCommand(
+      //init
+      () -> {numOfCarrots = 0;},
+      //execute
+      () -> {setBeltSpeed();},
+      //interrupt
+      interrupted -> stop(),
+      //isFinished
+      () -> isIndexFull,
+      //requirements
+      this
+    );
   }
 
   public Command Retreat() {
-    setBeltSpeed(-m_runSpeed);
+    setBeltSpeed();
         return null;
   }
 
@@ -152,7 +176,7 @@ public class IndexerSubsystem extends SubsystemBase {
 
   public void advance() {
 
-    exitControl.set(Constants.CONVEYOR_TARGET_SPEED); // just a placeholder for now
+    exitControl.set(exitSpeed); // just a placeholder for now
     // tihs will run the conveyor belt for a longer time than usual to make sure all
     // carrots are shot, then we can go back to getting carrot!
 
@@ -161,7 +185,7 @@ public class IndexerSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    // updateAll();
+    updateAll();
 
   }
 }

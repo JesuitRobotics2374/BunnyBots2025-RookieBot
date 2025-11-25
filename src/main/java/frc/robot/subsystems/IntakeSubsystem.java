@@ -18,6 +18,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.utils.Devices;
@@ -73,19 +74,16 @@ public class IntakeSubsystem extends SubsystemBase {
     return intaking;
   }
 
-  public Command Intake(double speed) {
-    intakeCarrot(speed);
-        return null;
+  public Command Intake() {
+    return new InstantCommand(() -> intakeCarrot(0.15), this);
   }
 
-  public Command Purge(double speed) {
-    purge(speed);
-        return null;
+  public Command Purge() {
+    return new InstantCommand(() -> purge(0.15), this);
   }
 
   public Command Stop() {
-    stopIntake();
-        return null;
+    return new InstantCommand(() -> stopIntake(), this);
   }
 
   @Override

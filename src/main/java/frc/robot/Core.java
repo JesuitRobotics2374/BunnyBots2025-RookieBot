@@ -6,9 +6,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.lang.management.OperatingSystemMXBean;
-
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 // import com.pathplanner.lib.auto.AutoBuilder;
@@ -17,40 +14,24 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 // import frc.robot.seafinder2.PathfinderSubsystem;
 // import frc.robot.seafinder2.interfaces.PanelSubsystem;
 import frc.robot.utils.Target;
-import frc.robot.utils.Target.Landmark;
-import frc.robot.utils.Target.Location;
-import frc.robot.utils.Target.Side;
-import frc.robot.utils.Target.TagRelativePose;
-// import frc.robot.subsystems.ClimberSubsystem;
-
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.TunerConstants;
 //import frc.robot.seafinder2.SF2Constants;
 import frc.robot.commands.ExactAlign;
 // import frc.robot.seafinder2.commands.ScoreCommand;
 // import frc.robot.seafinder2.commands.TestCommand;
 // import frc.robot.seafinder2.commands.limbControl.EjectCommand;
 // import frc.robot.seafinder2.commands.limbControl.ElevatorCommand;
-
+import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.IndexerSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 
@@ -153,23 +134,17 @@ public class Core {
 
         driveController.back().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric())); // RESET POSE
 
-        driveController.y().onTrue(new ExactAlign(drivetrain, target.getTagRelativePose()));
-        // driveController.x().onTrue(new InstantCommand(() -> System.out.println(target.getTagRelativePose())));
-
-        driveController.x().onTrue(new SequentialCommandGroup(
-            new ExactAlign(drivetrain, target.getTagRelativePose())
-        ));
 
         // operatorController.a().onTrue(m_ShooterSubsystem.shootCarrots());
         // operatorController.b().onTrue(m_ShooterSubsystem.stopShooter());
         // operatorController.x().onTrue(m_IndexerSubsystem.moveBelt());
         // operatorController.y().onTrue(m_IndexerSubsystem.stopBelt());
 
-        operatorController.a().onTrue(m_IntakeSubsystem.Intake(MaxSpeed));
-        operatorController.b().onTrue(m_IntakeSubsystem.Purge(MaxSpeed));
-        operatorController.x().onTrue(m_IntakeSubsystem.Stop());
+        operatorController.a().whileTrue(m_IntakeSubsystem.Intake()).onFalse(m_IntakeSubsystem.Stop());
+        operatorController.x().whileTrue(m_IntakeSubsystem.Purge()).onFalse(m_IntakeSubsystem.Stop());
+        operatorController.y().onTrue(m_IndexerSubsystem.Advance());
+        operatorController.b().onTrue(m_ShooterSubsystem.shootCarrots());
         
-
         //driveController.b().onTrue(new InstantCommand(() -> target.cycleLocationRight()));
         //driveController.a().onTrue(new InstantCommand(() -> target.cycleLocationLeft()));
 

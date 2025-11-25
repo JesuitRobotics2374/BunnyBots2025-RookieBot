@@ -14,6 +14,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.*;
 import frc.robot.Constants;
+import frc.robot.Core;
 import frc.robot.utils.Devices;
 
 
@@ -65,7 +66,7 @@ public class ShooterSubsystem extends SubsystemBase {
     topWheel.stopMotor();
   }
 
-  public boolean isShooterReady(boolean isCarrotLoaded) { // fix when indexer is made
+  public boolean isShooterReady() { // fix when indexer is made
 
     // indexer and shooter need to communicate about if 5 carrots are ready to be
     // shot
@@ -76,24 +77,37 @@ public class ShooterSubsystem extends SubsystemBase {
     //   return false;
     // }
 
-    if (isCarrotLoaded == true) {
-      return true;
-    } else {
-      return false;
-    }
-
+    // if (IndexerSubsystem.getNumOfCarrots() < 1 ) {
+    //   return true;
+    // } else {
+    //   return false;
+    // }
+    return true;
   }
 
-  public Command stopShooter() {
-    this.stop();
-    return null;
-  }
+  // public Command stopShooter() {
+  // }
+
+  // public Command shootCarrots() {
+  //   this.setSpeedShooter();
+  //   return null;
+  // }
 
   public Command shootCarrots() {
-    this.setSpeedShooter();
-    return null;
+    return new FunctionalCommand(
+      //init
+      () -> {},
+      //execute
+      () -> setSpeedShooter(),
+      //interrupt
+      interrupted -> stop(),
+      //isFinished
+      () -> !isShooterReady(),
+      //requirements
+      this
+    );
   }
-
+  
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
