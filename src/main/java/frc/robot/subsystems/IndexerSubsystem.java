@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix6.hardware.TalonFX;
 import frc.robot.Constants; // hey theres a constants file in the shooter branch this references that
+import frc.robot.Core;
 import frc.robot.utils.Devices;
 
 import com.ctre.phoenix6.hardware.core.CoreCANrange;
@@ -34,7 +35,7 @@ public class IndexerSubsystem extends SubsystemBase {
   /** Creates a new IndexerSubsystem. */
 
   private boolean isIndexFull;
-  private static int numOfCarrots = 0;
+  private int numOfCarrots = 0;
   
     private TalonFX entranceControl;
     private TalonFX exitControl;
@@ -47,6 +48,8 @@ public class IndexerSubsystem extends SubsystemBase {
   
     private double entranceSpeed;
     private double exitSpeed;
+
+    
   
     public IndexerSubsystem() {
   
@@ -56,7 +59,9 @@ public class IndexerSubsystem extends SubsystemBase {
       this.exitSensor = Devices.INDEXER_EXIT_CANRANGE;
   
       entranceSpeed = Constants.CONVEYER_ENTRANCE_SPEED;
-      exitSpeed = Constants.CONVEYER_EXIT_SPEED;
+      exitSpeed = Constants.CONVEYER_EXIT_SPEED; //FIX LATER PLEASE
+
+      isIndexFull = numOfCarrots >= 5;
   
     }
   
@@ -65,7 +70,7 @@ public class IndexerSubsystem extends SubsystemBase {
      * 
      * @return Integer of the number of carrots.
      */
-    public static int getNumOfCarrots() {
+    public int getNumOfCarrots() {
       return numOfCarrots;
   }
 
@@ -75,13 +80,6 @@ public class IndexerSubsystem extends SubsystemBase {
    * @return true = indexer is full.
    */
   public boolean getIsIndexFull() {
-
-    if (getNumOfCarrots() == 4) {
-      isIndexFull = true;
-    } else {
-      isIndexFull = false;
-    }
-
     return isIndexFull;
   } // true = four carrots in indexer {}
 
@@ -110,6 +108,11 @@ public class IndexerSubsystem extends SubsystemBase {
     exitControl.set(exitSpeed);
   }
 
+  private void setBeltSpeedBack() {
+    entranceControl.set(-entranceSpeed);
+    exitControl.set(-exitSpeed);
+  }
+
 
 
   // public Command Advance() {
@@ -117,14 +120,25 @@ public class IndexerSubsystem extends SubsystemBase {
   //       return null;
   // }
 
+  public Command purge() {
+    return new InstantCommand(() -> setBeltSpeedBack(), this);
+  }
+
+  public Command stopBelt() {
+    return new InstantCommand(() -> stop(), this);
+  }
+
   public Command Advance() {
     return new FunctionalCommand(
       //init
-      () -> {numOfCarrots = 0;},
+      () -> {numOfCarrots = 0;
+             stop();},
       //execute
-      () -> {setBeltSpeed();},
+      () -> {setBeltSpeed();
+             updateDetectionStateIn();
+            },
       //interrupt
-      interrupted -> stop(),
+      interrupted -> {stop();},
       //isFinished
       () -> isIndexFull,
       //requirements
@@ -132,15 +146,15 @@ public class IndexerSubsystem extends SubsystemBase {
     );
   }
 
-  public Command Retreat() {
-    setBeltSpeed();
-        return null;
-  }
+  // public Command Retreat() {
+  //   setBeltSpeed();
+  //       return null;
+  // }
 
-  public Command Halt() {
-    stop();
-        return null;
-  }
+  // public Command Halt() {
+  //   stop();
+  //       return null;
+  // }
 
   /**
    * Tells us if the carrot is loaded.
@@ -149,21 +163,24 @@ public class IndexerSubsystem extends SubsystemBase {
    */ 
   // do not delete this
   public void updateDetectionStateIn() {
-    if (detectionState != intakeSensor.getIsDetected().getValue()) {
-      if (detectionState == false) {
+    boolean current = intakeSensor.getIsDetected().getValue();
+
+    // Count only on rising edge (false -> true)
+    if (!detectionState && current) {
         numOfCarrots++;
-      }
     }
-    detectionState = intakeSensor.getIsDetected().getValue();
+
+    detectionState = current;
   }
 
   public void updateDetectionStateOut() {
-    if (detectionStateOut != exitSensor.getIsDetected().getValue()) {
-      if (detectionStateOut == true) {
+    boolean current = exitSensor.getIsDetected().getValue();
+
+    if (!detectionStateOut && current) {
         numOfCarrots--;
-      }
     }
-    detectionStateOut = exitSensor.getIsDetected().getValue();
+
+    detectionStateOut = current;
   }
 
   public void updateAll() {
@@ -184,8 +201,6 @@ public class IndexerSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
-    updateAll();
-
   }
+
 }

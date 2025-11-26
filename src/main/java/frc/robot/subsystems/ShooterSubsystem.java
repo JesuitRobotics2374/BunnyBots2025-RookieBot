@@ -31,6 +31,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
     this.bottomWheel = Devices.SHOOTER_BOTTOM_WHEEL;
     this.topWheel = Devices.SHOOTER_TOP_WHEEL;
+    stop();
     
   }
 
@@ -94,18 +95,11 @@ public class ShooterSubsystem extends SubsystemBase {
   // }
 
   public Command shootCarrots() {
-    return new FunctionalCommand(
-      //init
-      () -> {},
-      //execute
-      () -> setSpeedShooter(),
-      //interrupt
-      interrupted -> stop(),
-      //isFinished
-      () -> !isShooterReady(),
-      //requirements
-      this
-    );
+      return new InstantCommand(() -> setSpeedShooter(), this);
+  }
+
+  public Command stopCarrots() {
+      return new InstantCommand(() -> stop(), this);
   }
   
   @Override

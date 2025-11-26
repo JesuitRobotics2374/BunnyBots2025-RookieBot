@@ -17,6 +17,7 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 // import frc.robot.seafinder2.PathfinderSubsystem;
@@ -140,10 +141,19 @@ public class Core {
         // operatorController.x().onTrue(m_IndexerSubsystem.moveBelt());
         // operatorController.y().onTrue(m_IndexerSubsystem.stopBelt());
 
-        operatorController.a().whileTrue(m_IntakeSubsystem.Intake()).onFalse(m_IntakeSubsystem.Stop());
-        operatorController.x().whileTrue(m_IntakeSubsystem.Purge()).onFalse(m_IntakeSubsystem.Stop());
-        operatorController.y().onTrue(m_IndexerSubsystem.Advance());
-        operatorController.b().onTrue(m_ShooterSubsystem.shootCarrots());
+        // operatorController.a().whileTrue(m_IntakeSubsystem.Intake()).onFalse(m_IntakeSubsystem.Stop());
+        // operatorController.x().whileTrue(m_IntakeSubsystem.Purge()).onFalse(m_IntakeSubsystem.Stop());
+        // operatorController.y().onTrue(m_IndexerSubsystem.Advance());
+        // operatorController.b().onTrue(m_ShooterSubsystem.shootCarrots());
+
+        operatorController.a().onTrue(m_IntakeSubsystem.Intake());
+        operatorController.b().onTrue(m_IndexerSubsystem.stopBelt());
+        //operatorController.x().whileTrue(m_ShooterSubsystem.shootCarrots()).onFalse(m_IndexerSubsystem.stop());
+        operatorController.x().onTrue(new ParallelCommandGroup(m_IndexerSubsystem.Advance(), m_ShooterSubsystem.shootCarrots()));
+        operatorController.y().onTrue(m_ShooterSubsystem.stopCarrots());
+
+        operatorController.povUp().onTrue(m_IndexerSubsystem.purge());
+        operatorController.povDown().onTrue(m_IntakeSubsystem.Stop());
         
         //driveController.b().onTrue(new InstantCommand(() -> target.cycleLocationRight()));
         //driveController.a().onTrue(new InstantCommand(() -> target.cycleLocationLeft()));

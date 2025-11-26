@@ -11,11 +11,11 @@ public class Constants {
     // public static final double INTAKE_RETRACTED_POSITION = 0;
     // public static final double INTAKE_DEPLOYED_POSITION = 0.3;
 
-    public static final double CONVEYER_ENTRANCE_SPEED = 0.2;
-    public static final double CONVEYER_EXIT_SPEED = 0.3;
+    public static final double CONVEYER_ENTRANCE_SPEED = 0.1;
+    public static final double CONVEYER_EXIT_SPEED = 0.32;
   
-    public static final double TARGET_BOTTOM_SHOOTER_SPEED = 0.2; // change later
-    public static final double TARGET_TOP_SHOOTER_SPEED = 0.2 * (0.5 / 0.3);
+    public static final double TARGET_BOTTOM_SHOOTER_SPEED = 0.25; // change later
+    public static final double TARGET_TOP_SHOOTER_SPEED = 0.25 * (0.5 / 0.3);
     public static final double SHOOTER_MAX_RPM = 6000; // dont think we're using this
   
     // Critical Generic Constants

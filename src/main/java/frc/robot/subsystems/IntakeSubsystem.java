@@ -18,7 +18,9 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.utils.Devices;
@@ -26,6 +28,7 @@ import frc.robot.utils.Devices;
 public class IntakeSubsystem extends SubsystemBase {
 
   private SparkMax intakeMotor;
+  private IndexerSubsystem m_IndexerSubsystem = new IndexerSubsystem();
 
   private boolean intaking; // true = intaking
 
@@ -36,7 +39,6 @@ public class IntakeSubsystem extends SubsystemBase {
     config.idleMode(IdleMode.kCoast);
 
     intakeMotor.configure(config, null, null);
-    
     intaking = false;
   }
 
@@ -74,12 +76,28 @@ public class IntakeSubsystem extends SubsystemBase {
     return intaking;
   }
 
+  // public Command Intake() {
+  //   return new InstantCommand(() -> intakeCarrot(0.15), this);
+  // }
+
   public Command Intake() {
-    return new InstantCommand(() -> intakeCarrot(0.15), this);
+    return new FunctionalCommand(
+      //init
+      () -> {stopIntake();},
+      //execute
+      () -> {intakeCarrot(0.3);
+             m_IndexerSubsystem.Advance();},
+      //interrupt
+      interrupted -> {stopIntake();},
+      //isFinished
+      () -> m_IndexerSubsystem.getIsIndexFull(),
+      //requirements
+      this, m_IndexerSubsystem
+    );
   }
 
   public Command Purge() {
-    return new InstantCommand(() -> purge(0.15), this);
+    return new InstantCommand(() -> purge(0.3), this);
   }
 
   public Command Stop() {
