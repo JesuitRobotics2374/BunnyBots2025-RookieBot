@@ -147,10 +147,10 @@ public class Core {
         // operatorController.b().onTrue(m_ShooterSubsystem.shootCarrots());
 
         operatorController.a().onTrue(m_IntakeSubsystem.Intake());
-        operatorController.b().onTrue(m_IndexerSubsystem.stopBelt());
+        operatorController.povRight().onTrue(new ParallelCommandGroup(m_IndexerSubsystem.stopBelt(), m_ShooterSubsystem.stopCarrots()));
         //operatorController.x().whileTrue(m_ShooterSubsystem.shootCarrots()).onFalse(m_IndexerSubsystem.stop());
-        operatorController.x().onTrue(new ParallelCommandGroup(m_IndexerSubsystem.Advance(), m_ShooterSubsystem.shootCarrots()));
-        operatorController.y().onTrue(m_ShooterSubsystem.stopCarrots());
+        operatorController.b().onTrue(new ParallelCommandGroup(m_IndexerSubsystem.Advance(), m_ShooterSubsystem.shootCarrots()));
+        // operatorController.y().onTrue(m_ShooterSubsystem.stopCarrots());
 
         operatorController.povUp().onTrue(m_IndexerSubsystem.purge());
         operatorController.povDown().onTrue(m_IntakeSubsystem.Stop());

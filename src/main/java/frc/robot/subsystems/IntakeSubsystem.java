@@ -85,7 +85,7 @@ public class IntakeSubsystem extends SubsystemBase {
       //init
       () -> {stopIntake();},
       //execute
-      () -> {intakeCarrot(0.3);
+      () -> {intakeCarrot(0.2);
              m_IndexerSubsystem.Advance();},
       //interrupt
       interrupted -> {stopIntake();},
