@@ -19,7 +19,6 @@ import com.ctre.phoenix6.hardware.core.CoreCANrange;
 import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.CANBus; // only if specifying CAN bus name
-
 /**
  * todo:
  * Make control work
@@ -201,6 +200,9 @@ public class IndexerSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    updateAll();
+    
   }
 
 }
