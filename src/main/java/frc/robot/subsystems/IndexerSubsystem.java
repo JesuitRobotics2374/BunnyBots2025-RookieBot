@@ -119,11 +119,11 @@ public class IndexerSubsystem extends SubsystemBase {
   //       return null;
   // }
 
-  public Command purge() {
+  public Command Purge() {
     return new InstantCommand(() -> setBeltSpeedBack(), this);
   }
 
-  public Command stopBelt() {
+  public Command StopBelt() {
     return new InstantCommand(() -> stop(), this);
   }
 
