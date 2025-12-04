@@ -43,7 +43,7 @@ public class IndexerSubsystem extends SubsystemBase {
     private CoreCANrange intakeSensor;
     private CoreCANrange exitSensor;
   
-    private boolean detectionState;
+    private boolean detectionState = false;
     private boolean detectionStateOut;
   
     private double entranceSpeed;
@@ -179,7 +179,6 @@ public class IndexerSubsystem extends SubsystemBase {
     if (!detectionStateOut && current) {
         numOfCarrots--;
     }
-
     detectionStateOut = current;
   }
 
@@ -201,6 +200,7 @@ public class IndexerSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    updateAll();
   }
 
 }
