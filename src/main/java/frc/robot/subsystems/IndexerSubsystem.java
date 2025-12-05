@@ -19,6 +19,7 @@ import com.ctre.phoenix6.hardware.core.CoreCANrange;
 import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.CANBus; // only if specifying CAN bus name
+
 /**
  * todo:
  * Make control work
@@ -42,7 +43,7 @@ public class IndexerSubsystem extends SubsystemBase {
     private CoreCANrange intakeSensor;
     private CoreCANrange exitSensor;
   
-    private boolean detectionState;
+    private boolean detectionState = false;
     private boolean detectionStateOut;
   
     private double entranceSpeed;
@@ -167,6 +168,7 @@ public class IndexerSubsystem extends SubsystemBase {
     // Count only on rising edge (false -> true)
     if (!detectionState && current) {
         numOfCarrots++;
+        
     }
 
     detectionState = current;
@@ -178,7 +180,6 @@ public class IndexerSubsystem extends SubsystemBase {
     if (!detectionStateOut && current) {
         numOfCarrots--;
     }
-
     detectionStateOut = current;
   }
 
@@ -200,9 +201,7 @@ public class IndexerSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-
     updateAll();
-    
   }
 
 }
