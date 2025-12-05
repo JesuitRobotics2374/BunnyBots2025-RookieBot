@@ -23,8 +23,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 // import frc.robot.seafinder2.PathfinderSubsystem;
 // import frc.robot.seafinder2.interfaces.PanelSubsystem;
 import frc.robot.utils.Target;
+import frc.robot.utils.Target.TagRelativePose;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.Vision.VisionSubsystem;
 //import frc.robot.seafinder2.SF2Constants;
 import frc.robot.commands.ExactAlign;
 // import frc.robot.seafinder2.commands.ScoreCommand;
@@ -34,7 +36,6 @@ import frc.robot.commands.ExactAlign;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.subsystems.VisionSubsystem;
 
 public class Core {
 
@@ -100,6 +101,36 @@ public class Core {
 
 
     public void registerAutoCommands() {
+    }
+
+    public enum AutonomousPlan {
+        NO_AUTO, DRIVE_FORWARDS, SCORE, SCORE_AND_DRIVE
+    }
+
+    public void AutonomousCommandGroup(AutonomousPlan plan) {
+        switch(plan) {
+            case NO_AUTO:
+            break;
+
+            case DRIVE_FORWARDS:
+            autoCommandGroup = new SequentialCommandGroup(
+                drivetrain.applyRequest(() -> drive
+                    .withVelocityX(1.0 * MaxSpeed)
+                    .withVelocityY(0.0)
+                    .withRotationalRate(0.0))
+                    .withTimeout(2.0),
+                drivetrain.applyRequest(() -> drive
+                    .withVelocityX(0.0)
+                    .withVelocityY(0.0)
+                    .withRotationalRate(0.0))
+            );
+
+            case SCORE:
+            autoCommandGroup = new SequentialCommandGroup(
+                new ExactAlign(drivetrain, m_visionSubsystem, new TagRelativePose(4, 1, 1, 0)).withTimeout(3.0),
+                m_ShooterSubsystem.shootCarrots().withTimeout(3.0)
+            );
+        }
     }
 
     public void configureShuffleBoard() {

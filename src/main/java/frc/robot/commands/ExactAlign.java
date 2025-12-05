@@ -12,10 +12,9 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants;
 import frc.robot.utils.Target.TagRelativePose;
-import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Vision.VisionSubsystem;
 
 public class ExactAlign extends Command {
 
@@ -33,9 +32,9 @@ public class ExactAlign extends Command {
     private final SlewRateLimiter yawRateLimiter = new SlewRateLimiter(100.0);
 
     // Position tolerance thresholds
-    private static final double X_TOLERANCE = 0.035; // meters
-    private static final double Y_TOLERANCE = 0.02; // meters
-    private static final double YAW_TOLERANCE = 3 * Math.PI / 180; // radians
+    private static final double X_TOLERANCE = 0.05; // meters
+    private static final double Y_TOLERANCE = 0.025; // meters
+    private static final double YAW_TOLERANCE = 5 * Math.PI / 180; // radians
 
     // Maximum output valuess
     private static final double MAX_LINEAR_SPEED = 2.4;
@@ -58,6 +57,7 @@ public class ExactAlign extends Command {
     private static final int MAX_FRAMES_TO_AVERAGE = 7;
 
     private final CommandSwerveDrivetrain drivetrain;
+    private final VisionSubsystem vision;
     // private final SwerveRequest.RobotCentric drive;
 
     private final int tagId;
@@ -75,12 +75,13 @@ public class ExactAlign extends Command {
 
     private int clock;
 
-    public ExactAlign(CommandSwerveDrivetrain drivetrain, TagRelativePose tagRelativePose) {
-
+    public ExactAlign(CommandSwerveDrivetrain drivetrain, VisionSubsystem visionSubsystem, TagRelativePose tagRelativePose) {
+        System.out.println("exact align created");
         finishedOverride = false;
         this.clock = 0;
 
         this.drivetrain = drivetrain;
+        this.vision = visionSubsystem;
         this.tagId = tagRelativePose.getTagId();
         this.x_offset = tagRelativePose.getX();
         this.y_offset = tagRelativePose.getY();
@@ -129,7 +130,8 @@ public class ExactAlign extends Command {
         drivetrain.setControl(driveRequest
                 .withVelocityX(-dx)
                 .withVelocityY(-dy)
-                .withRotationalRate(dtheta));
+                .withRotationalRate(-dtheta)
+                );
 
         // clock++;
 
@@ -142,7 +144,7 @@ public class ExactAlign extends Command {
         dy = 0;
         dtheta = 0;
 
-        Pose3d currentPose = VisionSubsystem.averagePoses(VisionSubsystem.getTagRelativeToBot(tagId));
+        Pose3d currentPose = vision.getTagRelativeToBot(tagId);
         Pose3d usePose = null;
 
         if (currentPose == null) {
@@ -234,17 +236,23 @@ public class ExactAlign extends Command {
         dy = yRateLimiter.calculate(dy);
         dtheta = yawRateLimiter.calculate(dtheta);
 
+        if (Math.abs(error_yaw) > 90 * Math.PI/180) {  
+            System.out.println("fixing yaw");
+            error_yaw = Math.PI - Math.abs(error_yaw);
+        }
+
         // Zero out commands if we're within tolerance
         boolean xTollerenace = Math.abs(error_x) < X_TOLERANCE;
         boolean yTollerenace = Math.abs(error_y) < Y_TOLERANCE;
         boolean thetaTollerenace = Math.abs(error_yaw) + (0.5 * Math.PI / 180) < YAW_TOLERANCE;
 
-        // if (xTollerenace || drivetrain.getForwardRangeCombined() < 0.33)
-        //     dx = 0;
-        // if (yTollerenace)
-        //     dy = 0;
-        // if (thetaTollerenace)
-        //     dtheta = 0;
+        if (xTollerenace)
+            dx = 0;
+        if (yTollerenace)
+            dy = 0;
+        if (thetaTollerenace)
+            dtheta = 0;
+
 
         // // Set the drive request
         // if (clock >= 20) {
@@ -252,13 +260,15 @@ public class ExactAlign extends Command {
         //     System.out.println("cr range: " + drivetrain.getForwardRangeCombined());
         // }
 
-        // // Update state for isFinished
-        // if ((xTollerenace || (drivetrain.getForwardRangeCombined() < 0.33)) && yTollerenace && thetaTollerenace) {
-        //     framesAtTarget++;
-        // } else {
-        //     framesAtTarget = 0;
-        // }
+        if (xTollerenace && yTollerenace && thetaTollerenace) {
+            finishedOverride = true;
+            end(true);
+        }
+    }
 
+    @Override
+    public boolean isFinished() {
+        return framesAtTarget >= REQUIRED_FRAMES_AT_TARGET || finishedOverride;
     }
 
     @Override
@@ -275,11 +285,6 @@ public class ExactAlign extends Command {
         } else {
             System.out.println("EXACTALIGN FINISHED");
         }
-    }
-
-    @Override
-    public boolean isFinished() {
-        return framesAtTarget >= REQUIRED_FRAMES_AT_TARGET || finishedOverride;
     }
 
     public static Pose3d averagePoses(ArrayList<Pose3d> poses) {
