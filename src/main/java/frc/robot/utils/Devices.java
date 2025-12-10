@@ -4,15 +4,10 @@
 
 package frc.robot.utils;
 
-import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.hardware.core.CoreCANrange;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-
-import edu.wpi.first.math.trajectory.ExponentialProfile.State;
-import edu.wpi.first.wpilibj.CAN;
-import frc.robot.generated.TunerConstants;
 
 /** Add your docs here. */
 public class Devices {

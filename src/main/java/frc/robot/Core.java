@@ -18,24 +18,15 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-// import frc.robot.seafinder2.PathfinderSubsystem;
-// import frc.robot.seafinder2.interfaces.PanelSubsystem;
-import frc.robot.utils.Target;
-import frc.robot.utils.Target.TagRelativePose;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.Vision.VisionSubsystem;
-//import frc.robot.seafinder2.SF2Constants;
 import frc.robot.commands.ExactAlign;
-// import frc.robot.seafinder2.commands.ScoreCommand;
-// import frc.robot.seafinder2.commands.TestCommand;
-// import frc.robot.seafinder2.commands.limbControl.EjectCommand;
-// import frc.robot.seafinder2.commands.limbControl.ElevatorCommand;
+import frc.robot.commands.ForwardUntilTag;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -68,8 +59,6 @@ public class Core {
 
     Pose3d llp;
     Pose3d llp2;
-
-    private Target target;
 
     public AprilTagFieldLayout atf;
 
@@ -129,7 +118,8 @@ public class Core {
 
             case SCORE:
             autoCommandGroup = new SequentialCommandGroup(
-                new ExactAlign(drivetrain, m_visionSubsystem, new TagRelativePose(4, 1, 1, 0)).withTimeout(3.0),
+                new ForwardUntilTag(drivetrain, m_visionSubsystem),
+                new ExactAlign(drivetrain, m_visionSubsystem).withTimeout(5.0), // Increase timeout time if needed
                 m_ShooterSubsystem.shootCarrots().withTimeout(3.0)
             );
         }

@@ -18,10 +18,9 @@ public class VisionSubsystem extends SubsystemBase{
     private Camera[] cameras; // An array holding the PhotonCamera instances
     
     private int numCams = Constants.numberOfCams; // The number of cameras on the robot
-    private Transform3d[] cameraTransforms = {new Transform3d(0.10, 0, 0, new Rotation3d()),
-                                              new Transform3d(0.20, 0, 0, new Rotation3d())
-                                            };
-    private Camera.Type[] types = {Type.CARROT, Type.APRIL_TAG};
+    private Transform3d[] cameraTransforms = {new Transform3d(0.10, 0, 0, new Rotation3d())
+                                            }; //FIX THE POSES TODO
+    private Camera.Type[] types = {Type.APRIL_TAG};
     
     /**
      * Constructor for the VisionSubsystem class.
@@ -327,6 +326,11 @@ public class VisionSubsystem extends SubsystemBase{
     @Override
     public void periodic() {
         updateResults(); // Update camera results periodically
+
+        clock++;
+        if (clock > 0) {
+            clock = 0;
+        }
         
         // clock++;
 

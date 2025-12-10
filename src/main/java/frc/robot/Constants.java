@@ -2,16 +2,21 @@ package frc.robot;
 
 import java.nio.file.Paths;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
 
 public class Constants {
 
     public static final Core.AutonomousPlan AUTO_PLAN = Core.AutonomousPlan.NO_AUTO;
+
+    public static final double AUTO_STATIC_MOVE_SPEED = 0.5;
+
+    public static final double AUTO_X_OFFSET = 1;
+    public static final double AUTO_Y_OFFSET = 0;
+    public static final double AUTO_Z_OFFSET = 0;
+    
+    public static final double AUTO_ROLL_OFFSET = 0;
+    public static final double AUTO_PITCH_OFFSET = 0;
+    public static final double AUTO_YAW_OFFSET = 0;
   
     // public static final double INTAKE_RETRACTED_POSITION = 0;
     // public static final double INTAKE_DEPLOYED_POSITION = 0.3;

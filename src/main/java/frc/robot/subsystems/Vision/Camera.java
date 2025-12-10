@@ -1,6 +1,5 @@
 package frc.robot.subsystems.Vision;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +17,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.Constants;
 
 public class Camera {
@@ -32,12 +30,16 @@ public class Camera {
     // Camera constants - FOR THE COLOR CAM ONLY
     private static final double IMAGE_WIDTH = 640.0;
     private static final double IMAGE_HEIGHT = 480.0;
+    @SuppressWarnings("unused")
     private static final double VERTICAL_FOV_DEG = 47.72;
 
     // Camera intrinsics from calibration - FOR THE COLOR CAM ONLY
+    @SuppressWarnings("unused")
     private static final double FX = 545.08; // pixels
     private static final double FY = 542.63; // pixels
+    @SuppressWarnings("unused")
     private static final double CX = 349.47; // pixels (unused for pinhole model here)
+    @SuppressWarnings("unused")
     private static final double CY = 221.75; // pixels (unused for pinhole model here)
 
     // Constants for photon error - FOR OD ONLY

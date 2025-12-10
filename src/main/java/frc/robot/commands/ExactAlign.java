@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.utils.Target.TagRelativePose;
 import frc.robot.utils.Target;
 import frc.robot.Constants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -61,7 +60,6 @@ public class ExactAlign extends Command {
 
     private final CommandSwerveDrivetrain drivetrain;
     private final VisionSubsystem vision;
-    // private final SwerveRequest.RobotCentric drive;
 
     private int tagId;
     private boolean tagLoaded;
@@ -76,6 +74,32 @@ public class ExactAlign extends Command {
     private ArrayList<Pose3d> recentPoses;
 
     boolean finishedOverride;
+
+    public ExactAlign(CommandSwerveDrivetrain drivetrain, VisionSubsystem visionSubsystem) {
+        System.out.println("ExactAlign created");
+        finishedOverride = false;
+
+        this.drivetrain = drivetrain;
+        this.vision = visionSubsystem;
+
+        this.tagLoaded = false;
+
+        recentPoses = new ArrayList<>();
+
+        // Initialize PID controllers
+        // X PID coefficients (Adjust these values based on testing)
+        xController = new PIDController(2.5, 0.3, 2.8);
+        xController.setTolerance(X_TOLERANCE);
+
+        // Y PID coefficients
+        yController = new PIDController(3, 0.6, 2);
+        yController.setTolerance(Y_TOLERANCE);
+
+        // Yaw PID coefficients
+        yawController = new PIDController(2.2, 0.1, 0.2);
+        yawController.setTolerance(YAW_TOLERANCE);
+        yawController.enableContinuousInput(-Math.PI, Math.PI);
+    }
 
     public ExactAlign(CommandSwerveDrivetrain drivetrain, VisionSubsystem visionSubsystem, Target target) {
         System.out.println("ExactAlign created");
@@ -134,6 +158,22 @@ public class ExactAlign extends Command {
 
         framesAtTarget = 0;
         framesWithoutTarget = 0;
+
+        if (!tagLoaded) {
+            this.tagId = -1;
+
+            this.tagId = vision.getAllVisibleTagIDs().get(0);
+    
+            Target autoTarget = new Target(tagId, new Transform3d(Constants.AUTO_X_OFFSET, Constants.AUTO_Y_OFFSET, Constants.AUTO_Z_OFFSET, 
+                                                  new Rotation3d(Constants.AUTO_ROLL_OFFSET, Constants.AUTO_PITCH_OFFSET, Constants.AUTO_YAW_OFFSET)));
+    
+            Transform3d tagRelativePose = autoTarget.requestFiducialOffset().orElse(new Transform3d());
+    
+            this.x_offset = tagRelativePose.getX();
+            this.y_offset = tagRelativePose.getY();
+            this.yaw_offset = tagRelativePose.getRotation().getZ();
+    
+        }
     }
 
     @Override
@@ -143,12 +183,10 @@ public class ExactAlign extends Command {
         }
 
         drivetrain.setControl(driveRequest
-                .withVelocityX(-dx)
+                .withVelocityX(-dx) // we prob need to switch x and y (theta?) to fix the fact that the bot aligns sideways
                 .withVelocityY(-dy)
                 .withRotationalRate(-dtheta)
                 );
-
-        // clock++;
 
         // Average pose from each camera
         double avg_x = 0;
@@ -267,20 +305,6 @@ public class ExactAlign extends Command {
             dy = 0;
         if (thetaTollerenace)
             dtheta = 0;
-
-
-        // // Set the drive request
-        // if (clock >= 20) {
-        //     // System.out.println("Drive Control: dx: " + dx + " dy: " + dy);
-        //     System.out.println("cr range: " + drivetrain.getForwardRangeCombined());
-        // }
-
-        if (xTollerenace && yTollerenace && thetaTollerenace) {
-            finishedOverride = true;
-            end(true);
-        }
-    }
-
 
         if (xTollerenace && yTollerenace && thetaTollerenace) {
             finishedOverride = true;

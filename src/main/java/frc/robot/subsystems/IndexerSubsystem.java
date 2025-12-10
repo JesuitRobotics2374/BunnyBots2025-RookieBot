@@ -12,16 +12,12 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix6.hardware.TalonFX;
 import frc.robot.Constants; // hey theres a constants file in the shooter branch this references that
-import frc.robot.Core;
 import frc.robot.utils.Devices;
 
 import com.ctre.phoenix6.hardware.core.CoreCANrange;
-import com.ctre.phoenix6.configs.CANrangeConfiguration;
-import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.CANBus; // only if specifying CAN bus name
 
 /**
- * todo:
+ * to do:
  * Make control work
  * Set the conveyor belt move (public void shootcarrots)
  * 

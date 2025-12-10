@@ -1,55 +1,50 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.commands;
-
-import javax.print.event.PrintServiceAttributeListener;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.Constants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Vision.VisionSubsystem;
 
-/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class MoveToScore extends Command {
-  private final CommandSwerveDrivetrain drivetrain;
-  private final VisionSubsystem vision;
-  private final int tagID;
-  private final SwerveRequest.FieldCentric drive;
-  
-  /** Creates a new MoveToScore. */
-  public MoveToScore(CommandSwerveDrivetrain drivetrain, VisionSubsystem vision, int tagID, SwerveRequest.FieldCentric drive) {
-    // Use addRequirements() here to declare subsystem dependencies.
-    this.drivetrain = drivetrain;
-    this.vision = vision;
-    this.tagID = tagID;
-    this.drive = drive;
+public class ForwardUntilTag extends Command {
 
-    addRequirements(drivetrain, vision);
-  }
+    private final CommandSwerveDrivetrain drivetrain;
+    private final VisionSubsystem visionSubsystem;
 
-  // Called when the command is initially scheduled.
-  @Override
-  public void initialize() {
-  }
+    private boolean done;
 
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() {
-  }
+    public ForwardUntilTag(CommandSwerveDrivetrain driveSubsystem, VisionSubsystem visionSubsystem) {
+        this.drivetrain = driveSubsystem;
+        this.visionSubsystem = visionSubsystem;
 
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {
-    
-  }
+        addRequirements(driveSubsystem);
+    }
 
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return false;
-  }
+    @Override
+    public void initialize() {
+        done = false;
+    }
+
+    @Override
+    public void execute() {
+        drivetrain.setControl(
+                new SwerveRequest.RobotCentric().withVelocityY(-Constants.AUTO_STATIC_MOVE_SPEED)); // pray this works, reason is we start sideways so that vision starts aligned on yaw
+
+        if (visionSubsystem.getAllVisibleTagIDs().size() > 0) {
+            done = true;
+        }
+    }
+
+    @Override
+    public boolean isFinished() {
+        return done;
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        System.out.println("Move Back complete!");
+        drivetrain.setControl(new SwerveRequest.SwerveDriveBrake());
+    }
+
 }
