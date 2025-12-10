@@ -18,6 +18,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 // import frc.robot.seafinder2.PathfinderSubsystem;
 // import frc.robot.seafinder2.interfaces.PanelSubsystem;
 import frc.robot.utils.Target;
+import frc.robot.utils.Target.TagRelativePose;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.Vision.VisionSubsystem;
@@ -77,7 +79,7 @@ public class Core {
         // target.setLocation(new Target.Location(Landmark.REEF_BACK, Side.RIGHT));
         // target.setHeight(Target.Height.BRANCH_L4); // This is a structural requirement, but we don't use it here.
 
-        registerAutoCommands();
+        AutonomousCommandGroup(Constants.AUTO_PLAN);
         configureBindings();
         configureShuffleBoard();
 
@@ -100,8 +102,41 @@ public class Core {
         }
     }
 
+    public enum AutonomousPlan {
+        NO_AUTO, 
+        DRIVE_FORWARDS, 
+        SCORE
+        //,SCORE_AND_DRIVE
+    }
 
-    public void registerAutoCommands() {
+    public void AutonomousCommandGroup(AutonomousPlan plan) {
+        switch(plan) {
+            case NO_AUTO:
+            break;
+
+            case DRIVE_FORWARDS:
+            autoCommandGroup = new SequentialCommandGroup(
+                drivetrain.applyRequest(() -> drive
+                    .withVelocityX(1.0 * MaxSpeed)
+                    .withVelocityY(0.0)
+                    .withRotationalRate(0.0))
+                    .withTimeout(2.0),
+                drivetrain.applyRequest(() -> drive
+                    .withVelocityX(0.0)
+                    .withVelocityY(0.0)
+                    .withRotationalRate(0.0))
+            );
+
+            case SCORE:
+            autoCommandGroup = new SequentialCommandGroup(
+                new ExactAlign(drivetrain, m_visionSubsystem, new TagRelativePose(4, 1, 1, 0)).withTimeout(3.0),
+                m_ShooterSubsystem.shootCarrots().withTimeout(3.0)
+            );
+        }
+    }
+
+    public SequentialCommandGroup getAutonomousCommand() {
+        return autoCommandGroup;
     }
 
     public void configureShuffleBoard() {

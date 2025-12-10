@@ -10,6 +10,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
 
 public class Constants {
+
+    public static final Core.AutonomousPlan AUTO_PLAN = Core.AutonomousPlan.NO_AUTO;
   
     // public static final double INTAKE_RETRACTED_POSITION = 0;
     // public static final double INTAKE_DEPLOYED_POSITION = 0.3;

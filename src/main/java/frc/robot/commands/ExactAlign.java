@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.utils.Target.TagRelativePose;
 import frc.robot.utils.Target;
 import frc.robot.Constants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -60,6 +61,7 @@ public class ExactAlign extends Command {
 
     private final CommandSwerveDrivetrain drivetrain;
     private final VisionSubsystem vision;
+    // private final SwerveRequest.RobotCentric drive;
 
     private int tagId;
     private boolean tagLoaded;
@@ -145,6 +147,8 @@ public class ExactAlign extends Command {
                 .withVelocityY(-dy)
                 .withRotationalRate(-dtheta)
                 );
+
+        // clock++;
 
         // Average pose from each camera
         double avg_x = 0;
@@ -263,6 +267,20 @@ public class ExactAlign extends Command {
             dy = 0;
         if (thetaTollerenace)
             dtheta = 0;
+
+
+        // // Set the drive request
+        // if (clock >= 20) {
+        //     // System.out.println("Drive Control: dx: " + dx + " dy: " + dy);
+        //     System.out.println("cr range: " + drivetrain.getForwardRangeCombined());
+        // }
+
+        if (xTollerenace && yTollerenace && thetaTollerenace) {
+            finishedOverride = true;
+            end(true);
+        }
+    }
+
 
         if (xTollerenace && yTollerenace && thetaTollerenace) {
             finishedOverride = true;
