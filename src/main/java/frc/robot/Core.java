@@ -15,12 +15,14 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 // import frc.robot.seafinder2.PathfinderSubsystem;
 // import frc.robot.seafinder2.interfaces.PanelSubsystem;
 import frc.robot.utils.Target;
@@ -54,7 +56,7 @@ public class Core {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
 
     private final CommandXboxController driveController = new CommandXboxController(0);
-    private final CommandXboxController operatorController = new CommandXboxController(1);
+    private final Joystick operatorController = new Joystick(1);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final IntakeSubsystem m_IntakeSubsystem = new IntakeSubsystem();
@@ -170,6 +172,13 @@ public class Core {
 
         driveController.back().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric())); // RESET POSE
 
+        new JoystickButton(operatorController, 1).onTrue(m_IntakeSubsystem.Intake());
+        new JoystickButton(operatorController, 2).onTrue(m_IndexerSubsystem.Advance());
+        new JoystickButton(operatorController, 3).onTrue(m_IntakeSubsystem.Purge());
+        new JoystickButton(operatorController, 4).onTrue(m_IndexerSubsystem.Purge());
+        new JoystickButton(operatorController, 5).onTrue(m_ShooterSubsystem.shootCarrots());
+        new JoystickButton(operatorController, 7).onTrue(new ParallelCommandGroup(m_IndexerSubsystem.StopBelt(), m_ShooterSubsystem.stopCarrots(), m_IntakeSubsystem.Stop()));
+
 
         // operatorController.a().onTrue(m_ShooterSubsystem.shootCarrots());
         // operatorController.b().onTrue(m_ShooterSubsystem.stopShooter());
@@ -181,15 +190,19 @@ public class Core {
         // operatorController.y().onTrue(m_IndexerSubsystem.Advance());
         // operatorController.b().onTrue(m_ShooterSubsystem.shootCarrots());
 
-        operatorController.a().onTrue(m_IntakeSubsystem.Intake());
-        operatorController.b().onTrue(new ParallelCommandGroup(m_IndexerSubsystem.Advance(), m_ShooterSubsystem.shootCarrots()));
-        // operatorController.y().onTrue(m_ShooterSubsystem.stopCarrots());
-        //operatorController.x().whileTrue(m_ShooterSubsystem.shootCarrots()).onFalse(m_IndexerSubsystem.stop());      
-        operatorController.povUp().onTrue(m_IndexerSubsystem.Purge()); //We need a command to turn off the shooter
-        operatorController.povLeft().onTrue(m_IntakeSubsystem.Purge()); //test out later
-        operatorController.povRight().onTrue(new ParallelCommandGroup(m_IndexerSubsystem.StopBelt(), m_ShooterSubsystem.stopCarrots()));
-        operatorController.povDown().onTrue(m_IntakeSubsystem.Stop());
+        // operatorController.a().onTrue(m_IntakeSubsystem.Intake());
+        // operatorController.povDown().onTrue(m_IntakeSubsystem.Stop());
+        // operatorController.povLeft().onTrue(m_IntakeSubsystem.Purge()); //test out later
+
+        // operatorController.b().onTrue(new ParallelCommandGroup(m_IndexerSubsystem.Advance(), m_ShooterSubsystem.shootCarrots()));
+        // operatorController.povRight().onTrue(new ParallelCommandGroup(m_IndexerSubsystem.StopBelt(), m_ShooterSubsystem.stopCarrots()));        
+        // operatorController.x().onTrue(m_ShooterSubsystem.stopCarrots());
         
+        // operatorController.y().onTrue(new ParallelCommandGroup(m_IntakeSubsystem.Intake(), m_IndexerSubsystem.Advance()));
+        // operatorController.povUp().onTrue(m_IndexerSubsystem.Purge()); //We need a command to turn off the shooter
+            
+         // operatorController.y().onTrue(m_ShooterSubsystem.stopCarrots());
+        //operatorController.x().whileTrue(m_ShooterSubsystem.shootCarrots()).onFalse(m_IndexerSubsystem.stop());  
         //driveController.b().onTrue(new InstantCommand(() -> target.cycleLocationRight()));
         //driveController.a().onTrue(new InstantCommand(() -> target.cycleLocationLeft()));
 

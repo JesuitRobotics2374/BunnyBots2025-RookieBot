@@ -11,17 +11,17 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.Vision.Camera.Type;
 
 public class VisionSubsystem extends SubsystemBase{
 
     private Camera[] cameras; // An array holding the PhotonCamera instances
     
     private int numCams = Constants.numberOfCams; // The number of cameras on the robot
-    private Transform3d[] cameraTransforms = {
-        new Transform3d(0.37, 0,  0.31, new Rotation3d(0, 40.73 * Math.PI/180, 0)),
-        new Transform3d(0, 0, 0, new Rotation3d(0, 0, 0))
-                                              };
-    private Camera.Type[] types = {Camera.Type.APRIL_TAG, Camera.Type.CARROT};
+    private Transform3d[] cameraTransforms = {new Transform3d(0.10, 0, 0, new Rotation3d()),
+                                              new Transform3d(0.20, 0, 0, new Rotation3d())
+                                            };
+    private Camera.Type[] types = {Type.CARROT, Type.APRIL_TAG};
     
     /**
      * Constructor for the VisionSubsystem class.
@@ -30,12 +30,48 @@ public class VisionSubsystem extends SubsystemBase{
         cameras = new Camera[numCams];
 
         for (int i = 0; i < numCams; i++) { // Initialize each camera
-            cameras[i] = new Camera("camera" + i, cameraTransforms[i], types[i]);
+            System.out.println("initiazlied: " + types[i].toString() + "Camera" + i);
+
+            cameras[i] = new Camera(types[i].toString() + "Camera" + i, cameraTransforms[i], types[i]);
+        }
+    }
+
+    /**
+     * Checks if all cameras are connected properly or not.
+     * @return if every camera is connected or not.
+     */
+    public boolean getConnection() {
+        for (int i = 0; i < numCams; i++) { 
+            if (cameras[i].getCameraType() == Camera.Type.DISCONNECTED) { // Intentionally disconnected cameras should not affect the connection status
+                continue;
+            }
+
+            if (!cameras[i].isConnected()) { // If any camera is not connected, return false
+                return false;
+            }
         }
 
+        return true;
+    }
 
+    /**
+     * Checks how many cameras of a certain type are connected.
+     * @return the number of cameras of Type that are connected.
+     */
+    public int numCamsOfType(Camera.Type type) {
+        int count = 0;
 
-        // TODO: CONSTRUCTOR, it may be done idk needs testing
+        for (int i = 0; i < numCams; i++) { 
+            if (cameras[i].getCameraType() != type) { // Skip cameras that are not of the specified type
+                continue;
+            }
+
+            if (cameras[i].isConnected()) { // If the camera is connected, increment the count
+                count++;
+            }
+        }
+
+        return count; // Return the total count of connected cameras of the specified type
     }
 
     /**
@@ -44,6 +80,10 @@ public class VisionSubsystem extends SubsystemBase{
      */
     public List<Integer> getAllVisibleTagIDs() {
         List<Integer> allTags = new ArrayList<>(); // A list to hold all visible tag IDs
+
+        if (getConnection() == false || numCamsOfType(Camera.Type.APRIL_TAG) == 0) { // If no cameras are connected or no AprilTag cameras are present, return an empty list
+            return allTags;
+        }
 
         for (int i = 0; i < numCams; i++) { // Iterate through each camera and get its visible tags
             allTags.addAll(cameras[i].getAllAvailableTagIDs());
@@ -59,6 +99,10 @@ public class VisionSubsystem extends SubsystemBase{
      */
     public boolean canSeeTag(int tagID) {
         List<Integer> allTags = getAllVisibleTagIDs(); // Get the list of all visible tags
+
+        if (getConnection() == false || numCamsOfType(Camera.Type.APRIL_TAG) == 0) { // If no cameras are connected or no AprilTag cameras are present, return false
+            return false;
+        }
         
         if (tagID == -1) { // If tagID is -1, check if any tags are visible
             return allTags.size() > 0;
@@ -111,6 +155,10 @@ public class VisionSubsystem extends SubsystemBase{
     public List<EstimatedRobotPose> getGlobalFieldPoses() {
         List<EstimatedRobotPose> allPoses = new ArrayList<>(); // A list to hold all estimated robot poses
 
+        if (getConnection() == false || numCamsOfType(Camera.Type.APRIL_TAG) == 0) { // If no cameras are connected or no AprilTag cameras are present, return an empty list
+            return allPoses;
+        }
+
         for (int i = 0; i < numCams; i++) { // Iterate through each camera
             if (cameras[i].getCameraType() != Camera.Type.APRIL_TAG) { // Skip cameras that are not AprilTag cameras
                 continue;
@@ -128,6 +176,10 @@ public class VisionSubsystem extends SubsystemBase{
      * @return The averaged Pose3d of the tag relative to the robot.
      */
     public Pose3d getTagRelativeToBot(int tagID) {
+        if (getConnection() == false || numCamsOfType(Camera.Type.APRIL_TAG) == 0) { // If no cameras are connected or no AprilTag cameras are present, return null
+            return null;
+        }
+
         ArrayList<Pose3d> tagPoses = new ArrayList<>(); // A list to hold the poses of the tag from each camera
 
         for (int i = 0; i < numCams; i++) { // Iterate through each camera
@@ -143,7 +195,7 @@ public class VisionSubsystem extends SubsystemBase{
     }
 
     /**
-     * DEPRACATED UNTIL FURTHER NOTICE, DOES NOT WORK
+     * DEPRACATED UNTIL FURTHER NOTICE, DOES NOT WORK - GO TO ETHAN IF YOU WANT THIS FIXED
      * Gets the pose of the robot relative to a specific tag, averaged across all cameras.
      * @param tagID, the ID of the tag to get the pose for.
      * @return The averaged Pose3d of the robot relative to the tag.
@@ -169,6 +221,10 @@ public class VisionSubsystem extends SubsystemBase{
      * @return The Pose3d of the nearest tag relative to the robot, or null if no tags are visible.
      */
     public Pose3d getNearestTag() {
+        if (getConnection() == false || numCamsOfType(Camera.Type.APRIL_TAG) == 0) { // If no cameras are connected or no AprilTag cameras are present, return null
+            return null;
+        }
+
         List<Integer> visibleTags = getAllVisibleTagIDs(); // Get the list of all visible tags
 
         List<Pose3d> tagPoses = new ArrayList<>(); // A list to hold the poses of the visible tags
@@ -202,6 +258,10 @@ public class VisionSubsystem extends SubsystemBase{
      * @return The distance to the tag in meters, or -1 if the tag is not visible.
      */
     public double getDistanceToTag(int tagID) {
+        if (getConnection() == false || numCamsOfType(Camera.Type.APRIL_TAG) == 0) { // If no cameras are connected or no AprilTag cameras are present, return not a number
+            return Double.NaN;
+        }
+
         Pose3d tagPose = getTagRelativeToBot(tagID); // Get the pose of the tag relative to the robot
 
         if (tagPose == null) { // If the tag pose is not valid, return -1
@@ -215,6 +275,10 @@ public class VisionSubsystem extends SubsystemBase{
      * Get the nearest object of the specified type
      */
     public Pose3d getNearestObject(Camera.Type type) {
+        if (getConnection() == false || numCamsOfType(type) == 0) { // If no cameras are connected or no AprilTag cameras are present, return null
+            return null;
+        }
+
         ArrayList<Pose3d> poses = new ArrayList<>(); // Initialize the list of poses
 
         for (int i = 0; i < numCams; i++) { // Iterate through each camera
@@ -264,11 +328,11 @@ public class VisionSubsystem extends SubsystemBase{
     public void periodic() {
         updateResults(); // Update camera results periodically
         
-        clock++;
+        // clock++;
 
-        if (clock >= 25) {
-            clock = 0;
-            //System.out.println(getNearestObject(Camera.Type.CARROT));
-        }
+        // if (clock >= 25) {
+        //     clock = 0;
+        //     //System.out.println(getNearestObject(Camera.Type.CARROT));
+        // }
     }
 }

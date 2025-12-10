@@ -1,157 +1,114 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.utils;
 
 import java.util.Optional;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Core;
-// import frc.robot.seafinder2.SF2Constants;
-// import frc.robot.seafinder2.commands.StaticBackCommand;
 
 public class Target {
 
-    public enum Landmark {
-        CARROT_PATCH, FEEDER_STATION
+    public enum Type {
+        APRILTAG,
+        FIELD
     }
 
-    public enum Side {
-        FRONT, BACK, LEFT, RIGHT
+    private Pose3d fieldPose;
+
+    private Optional<Transform3d> fiducialOffset = Optional.empty();
+    private Optional<Integer> fiducialID = Optional.empty();
+
+    private Type type;
+
+    /**
+     * Create a field target at a specific pose.
+     * @param pose The pose of the target on the field.
+     */
+    public Target(Pose3d pose) {
+        fieldPose = pose;
+        type = Type.FIELD;
     }
 
-    public static class Location {
-        Landmark landmark;
-        Side side;
+    /**
+     * Create an AprilTag target with a fiducial ID and offset.
+     * @param fiducialID The ID of the fiducial (tag).
+     * @param fiducialOffset The offset of the target from the fiducial.
+     */
+    public Target(int fiducialID, Transform3d fiducialOffset) {
+        this.fiducialID = Optional.of(fiducialID);
+        this.fiducialOffset = Optional.of(fiducialOffset);
+        this.fieldPose = calculateGlobalFieldPose(this, null);
+        type = Type.APRILTAG;
+    }
 
-        public Location(Landmark landmark, Side side) {
-            this.landmark = landmark;
-            this.side = side;
+    /**
+     * Calculate the global field pose of a target given its fiducial ID and offset.
+     * @param target The target to calculate the pose for.
+     * @param layout The AprilTag field layout.
+     * @return The global field pose of the target, or null if it cannot be calculated.
+     */
+    private static Pose3d calculateGlobalFieldPose(Target target, AprilTagFieldLayout layout) {
+        if (target.fiducialID.isPresent() && target.fiducialOffset.isPresent()) {
+            try {
+                if (layout == null ||
+                    !layout.getTagPose(target.fiducialID.get()).isPresent()) {
+                    Pose3d vt = VirtualTag.getVirtualTag(target.fiducialID.get());
+                    if (vt != null) {
+                        return vt.transformBy(
+                            target.fiducialOffset.get());
+                    }
+                    return null;
+                }
+                var tagPose = layout.getTagPose(target.fiducialID.get());
+                if (tagPose.isPresent()) {
+                    return tagPose.get().transformBy(
+                        target.fiducialOffset.get());
+                }
+            } catch (Exception e) {
+                DriverStation.reportError(
+                    "Unable to resolve AprilTag field pose.",
+                    e.getStackTrace());
+            }
         }
-
-        public Location(Landmark landmark) {
-            this.landmark = landmark;
-        }
-
-        public Landmark getLandmark() {
-            return landmark;
-        }
-
-        public Side getSide() {
-            return side;
-        }
-
-        @Override
-        public String toString() {
-            return landmark.toString() + " " + side.toString();
-        }
+        return null;
     }
 
-    public static class TagRelativePose {
-        int tagId;
-
-        // NWU coordinate system
-        double x;
-        double y;
-        double yaw;
-
-        public TagRelativePose(int tagId, double x, double y, double yaw) {
-            this.tagId = tagId;
-            this.x = x;
-            this.y = y;
-            this.yaw = yaw;
-        }
-
-        public int getTagId() {
-            return tagId;
-        }
-
-        public double getX() {
-            return x;
-        }
-
-        public double getY() {
-            return y;
-        }
-
-        public double getYaw() {
-            return yaw;
-        }
-
-        public Pose2d getPose2d() {
-            return new Pose2d(x, y, new Rotation2d(yaw));
-        }
-
-        public String toString() {
-            return "Tag " + tagId + " at (" + x + ", " + y + ") with yaw " + yaw;
-        }
+    /**
+     * Get the field pose of the target.
+     * @return The field pose of the target.
+     */
+    public Pose3d getFieldPose() {
+        return fieldPose;
     }
 
-    Core core;
-
-    Location location;
-
-    TagRelativePose tagRelativePose;
-    Command retractCommand;
-
-    public Target(Core core) {
-        this.core = core;
+    /**
+     * Get the type of the target.
+     * @return The type of the target.
+     */
+    public Type getType() {
+        return type;
+    }
+    
+    /**
+     * Get the fiducial ID of the target, if it has one.
+     * @return The fiducial ID of the target, or empty if it does not have one.
+     */
+    public Optional<Integer> requestFiducialID() {
+        return fiducialID;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
-        if (isValid()) {
-            compute();
-        }
+    /**
+     * Get the fiducial offset of the target, if it has one.
+     * @return The fiducial offset of the target, or empty if it does not have one.
+     */
+    public Optional<Transform3d> requestFiducialOffset() {
+        return fiducialOffset;
     }
 
-    public void compute() {
-        init();
-    }
-
-    public boolean isValid() {
-        return true;
-    }
-
-    public boolean isComputed() {
-        return tagRelativePose != null;
-    }
-
-    public Location getLocation() {
-        return location;
-    }
-
-    public TagRelativePose getTagRelativePose() {
-        return tagRelativePose;
-    }
-
-    public int getTag() {
-        return tagRelativePose.getTagId();
-    }
-
-    public Command getRetractCommand() {
-        return retractCommand;
-    }
-    public String toString() {
-        return "Target at " + location;
-    }
-
-    private void init() {
-        final Optional<DriverStation.Alliance> driverStationAlliance = DriverStation.getAlliance();
-        if (!driverStationAlliance.isPresent()) {
-            throw new IllegalStateException("Driver station alliance not present");
-        }
-        final boolean isRed = driverStationAlliance.get() == Alliance.Red;
-
-        int tagId = -1;
-        double x = 0;
-        double y = 0;
-        double yaw = 0;
-
-        this.tagRelativePose = new TagRelativePose(tagId, x, y, yaw);
-
-    }
-
+    
 }

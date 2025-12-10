@@ -12,8 +12,6 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import com.fasterxml.jackson.databind.AnnotationIntrospector.ReferenceProperty.Type;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -21,6 +19,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Filesystem;
+import frc.robot.Constants;
 
 public class Camera {
     private PhotonCamera camera; // The PhotonCamera instance
@@ -49,28 +48,30 @@ public class Camera {
     // Physical object size (pool noodle OD = 2.5 in)
     private static final double OBJECT_HEIGHT_M = 2.5 * 0.0254; // 0.0635 m
 
-
     // Enum for the type of object the camera detects
     public enum Type {
         APRIL_TAG,
-        CARROT
+        CARROT,
+        DISCONNECTED // For a camera that is not connected intentionally
     }
 
     /**
      * Constructor for the Camera class.
      * 
-     * @param nti - the NetworkTableInstance of the robot
-     * @param cameraName - the name of the camera in PhotonVision
+     * @param nti                    - the NetworkTableInstance of the robot
+     * @param cameraName             - the name of the camera in PhotonVision
      * @param robotToCameraTransform - the Transform3d from the robot to the camera
      */
     public Camera(String cameraName, Transform3d robotToCameraTransform, Type type) {
         System.out.println(NetworkTableInstance.getDefault());
 
-        this.camera = new PhotonCamera(NetworkTableInstance.getDefault(), cameraName); // Initialize the PhotonCamera
-                                                                                       // with the given NTI and name
-        this.cameraName = cameraName;
+        this.cameraName = cameraName; // Store the name
         this.robotToCameraTransform = robotToCameraTransform; // Store the robot-to-camera transform
         this.type = type; // Set the type based on the given type
+
+        this.camera = new PhotonCamera(NetworkTableInstance.getDefault(), this.cameraName); // Initialize the
+                                                                                            // PhotonCamera
+        // with the given NTI and name
 
         if (this.type == Type.APRIL_TAG) { // If the type is for AprilTags, initialize the pose estimator
             AprilTagFieldLayout aprilTagFieldLayout = loadField(); // Load the AprilTag field layout
@@ -93,12 +94,7 @@ public class Camera {
      */
     private AprilTagFieldLayout loadField() {
         try { // Load the AprilTag field layout from the file
-            String path = Paths.get(Filesystem.getDeployDirectory().getAbsolutePath(), "2025-reefscape-welded.json")
-                    .toString();
-            // String path = Paths.get(Filesystem.getDeployDirectory().getAbsolutePath(),
-            // Constants.FIELD_PATH).toString();
-            return new AprilTagFieldLayout(path);
-
+            return new AprilTagFieldLayout(Constants.FIELD_PATH);
         } catch (Exception e) { // Handle any exceptions that occur during loading
             e.printStackTrace();
         }
@@ -121,6 +117,14 @@ public class Camera {
     }
 
     /**
+     * Returns whether the camera is connected or not. 
+     * @return whether the camera is connected or not.
+     */
+    public boolean isConnected() {
+        return camera.isConnected(); // Return if the camera is connected or not
+    }
+
+    /**
      * Adjust the raw pose obtained from the camera to account for the camera's
      * position and orientation on the robot.
      * 
@@ -128,33 +132,36 @@ public class Camera {
      * @return Adjusted Pose3d representing the robot's pose on the field.
      */
     private Pose3d adjustPose(Transform3d rawPose) {
-        // if (rawPose == null) { // If the raw pose is null, return null
-        //     return null;
-        // }
+        if (rawPose == null) { // If the raw pose is null, return null
+            return null;
+        }
 
-        // Pose3d p = new Pose3d(rawPose.getTranslation(), rawPose.getRotation()); // Convert Transform3d to Pose3d
-
-        // return p.transformBy(robotToCameraTransform); // Adjust the raw pose by adding the robot-to-camera transform and return it
-        
-        if (type == Type.APRIL_TAG) {
+        if (type == Type.APRIL_TAG) { // if it is an aprilTag value, normalize the yaw
             rawPose = normalizeYaw(rawPose);
         }
 
         if (robotToCameraTransform.getRotation().getY() != 0) {
-            double XPitchFix = rawPose.getTranslation().getX() * Math.cos(robotToCameraTransform.getRotation().getY());
+            double pitch = robotToCameraTransform.getRotation().getY(); // get the pitch
+            double hypotenuse = rawPose.getTranslation().getX();
 
-            Translation3d pitchFixTr = rawPose.getTranslation();
+            double XPitchFix = hypotenuse * Math.cos(pitch); // fix the forward distance
+            double YPitchFix = rawPose.getTranslation().getY(); // no need to fix anything
+            double ZPitchFix = hypotenuse * Math.sin(pitch); // fix the vertical distance
 
-            rawPose = new Transform3d(XPitchFix, pitchFixTr.getY(), pitchFixTr.getZ(), rawPose.getRotation());
+            rawPose = new Transform3d(XPitchFix, YPitchFix, ZPitchFix, rawPose.getRotation());
         }
-        
-        Transform3d adjustedPose = rawPose.plus(robotToCameraTransform); // Adjust the raw pose by adding the robot-to-camera transform, TODO: CHECK IF THIS NEEDS TO BE SUBTRACTED
-        
-        return new Pose3d(adjustedPose.getTranslation(), adjustedPose.getRotation()); // Return the adjusted pose as a Pose3d
+
+        Transform3d adjustedPose = rawPose.plus(robotToCameraTransform); // Adjust the raw pose by adding the
+                                                                         // robot-to-camera transform, TODO: CHECK IF
+                                                                         // THIS NEEDS TO BE SUBTRACTED
+
+        return new Pose3d(adjustedPose.getTranslation(), adjustedPose.getRotation()); // Return the adjusted pose as a
+                                                                                      // Pose3d
     }
 
     /**
-     * Normalizes the yaw of the given transform3d so that the April Tag values given by Photon do not have 180° as centered
+     * Normalizes the yaw of the given transform3d so that the April Tag values
+     * given by Photon do not have 180° as centered
      * 
      * @param rawTransform - The raw, not normalized transform3d
      * @return The normalized transform3d
@@ -170,6 +177,7 @@ public class Camera {
         }
 
         Rotation3d rotation = rawTransform.getRotation();
+
 
         return new Transform3d(rawTransform.getTranslation(),
                                new Rotation3d(rotation.getX(), rotation.getY(), yawValue));
@@ -294,15 +302,16 @@ public class Camera {
 
         if (this.type != Type.CARROT) { // If the type does not match, return the empty list
             return poses;
-        }   
+        }
 
-        if (latestResult == null || !latestResult.hasTargets()) { // If there are no targets in the latest result, return the empty list
+        if (latestResult == null || !latestResult.hasTargets()) { // If there are no targets in the latest result,
+                                                                  // return the empty list
             return poses;
         }
 
         for (PhotonTrackedTarget target : latestResult.getTargets()) { // Iterate through each target and add it
             Pose3d pose = adjustPose(calculateObjectPose(target.getArea(), target.getYaw(), target.getPitch()));
-            
+
             if (pose == null) { // Skip null poses
                 continue;
             }
@@ -313,46 +322,49 @@ public class Camera {
         return poses; // Return the list of poses
     }
 
-     /**
-      * Calculates the 3D pose of the object relative to the camera using area percent.
-      *
-      * @param areaPercent - Percent of the total image area the object occupies (0-100)
-      * @param yawDeg - Horizontal angle from PhotonVision (degrees)
-      * @param pitchDeg - Vertical angle from PhotonVision (degrees)
-      * @param imageWidth - Camera image width (pixels)
-      * @param imageHeight - Camera image height (pixels)
-      * @return Transform3d of the object in the camera frame
-      */
-     public static Transform3d calculateObjectPose(double areaPercent, double yawDeg, double pitchDeg) {
-         if (areaPercent <= 0.0) {
-             // invalid detection
-             return null;
-         }
+    /**
+     * Calculates the 3D pose of the object relative to the camera using area
+     * percent.
+     *
+     * @param areaPercent - Percent of the total image area the object occupies
+     *                    (0-100)
+     * @param yawDeg      - Horizontal angle from PhotonVision (degrees)
+     * @param pitchDeg    - Vertical angle from PhotonVision (degrees)
+     * @param imageWidth  - Camera image width (pixels)
+     * @param imageHeight - Camera image height (pixels)
+     * @return Transform3d of the object in the camera frame
+     */
+    public static Transform3d calculateObjectPose(double areaPercent, double yawDeg, double pitchDeg) {
+        if (areaPercent <= 0.0) {
+            // invalid detection
+            return null;
+        }
 
-         double areaFraction = areaPercent / 100.0; // Convert area percent to fraction
- 
-         // Approximate vertical pixel height from area fraction (assumes roughly square/circle object)
-         double pPixels = Math.sqrt(areaFraction * IMAGE_WIDTH * IMAGE_HEIGHT);
- 
-         // Compute range using pinhole model
-         double R = (FY * OBJECT_HEIGHT_M) / pPixels;
- 
-         // Convert angles to radians
-         double theta = Math.toRadians(yawDeg);   // yaw
-         double phi = Math.toRadians(pitchDeg);   // pitch
- 
-         // Convert spherical -> Cartesian (camera coordinates)
-         double X = R * Math.cos(phi) * Math.cos(theta);  // forward
-         double Y = -R * Math.cos(phi) * Math.sin(theta); // right = negative
-         double Z = R * Math.sin(phi);                    // up
+        double areaFraction = areaPercent / 100.0; // Convert area percent to fraction
 
-         // Fix the errors
-         X = X * xFix;
-         Y = Y * yFix;
-         Z = Z * zFix;
- 
-         return new Transform3d(new Translation3d(X, Y, Z), new Rotation3d());
-     }
+        // Approximate vertical pixel height from area fraction (assumes roughly
+        // square/circle object)
+        double pPixels = Math.sqrt(areaFraction * IMAGE_WIDTH * IMAGE_HEIGHT);
+
+        // Compute range using pinhole model
+        double R = (FY * OBJECT_HEIGHT_M) / pPixels;
+
+        // Convert angles to radians
+        double theta = Math.toRadians(yawDeg); // yaw
+        double phi = Math.toRadians(pitchDeg); // pitch
+
+        // Convert spherical -> Cartesian (camera coordinates)
+        double X = R * Math.cos(phi) * Math.cos(theta); // forward
+        double Y = -R * Math.cos(phi) * Math.sin(theta); // right = negative
+        double Z = R * Math.sin(phi); // up
+
+        // Fix the errors
+        X = X * xFix;
+        Y = Y * yFix;
+        Z = Z * zFix;
+
+        return new Transform3d(new Translation3d(X, Y, Z), new Rotation3d());
+    }
 
     /**
      * Get the type of object the camera detects.
