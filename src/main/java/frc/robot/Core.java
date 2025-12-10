@@ -17,6 +17,7 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -76,7 +77,7 @@ public class Core {
         // target.setLocation(new Target.Location(Landmark.REEF_BACK, Side.RIGHT));
         // target.setHeight(Target.Height.BRANCH_L4); // This is a structural requirement, but we don't use it here.
 
-        registerAutoCommands();
+        AutonomousCommandGroup(Constants.AUTO_PLAN);
         configureBindings();
         configureShuffleBoard();
 
@@ -99,12 +100,11 @@ public class Core {
         }
     }
 
-
-    public void registerAutoCommands() {
-    }
-
     public enum AutonomousPlan {
-        NO_AUTO, DRIVE_FORWARDS, SCORE, SCORE_AND_DRIVE
+        NO_AUTO, 
+        DRIVE_FORWARDS, 
+        SCORE
+        //,SCORE_AND_DRIVE
     }
 
     public void AutonomousCommandGroup(AutonomousPlan plan) {
@@ -131,6 +131,10 @@ public class Core {
                 m_ShooterSubsystem.shootCarrots().withTimeout(3.0)
             );
         }
+    }
+
+    public SequentialCommandGroup getAutonomousCommand() {
+        return autoCommandGroup;
     }
 
     public void configureShuffleBoard() {
