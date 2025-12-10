@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.utils.Target;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.Vision.VisionSubsystem;
 //import frc.robot.seafinder2.SF2Constants;
 import frc.robot.commands.ExactAlign;
 // import frc.robot.seafinder2.commands.ScoreCommand;
@@ -34,7 +35,6 @@ import frc.robot.commands.ExactAlign;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.subsystems.VisionSubsystem;
 
 public class Core {
 

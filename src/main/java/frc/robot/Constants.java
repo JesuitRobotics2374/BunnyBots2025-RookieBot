@@ -1,10 +1,13 @@
 package frc.robot;
 
+import java.nio.file.Paths;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Filesystem;
 
 public class Constants {
   
@@ -33,12 +36,8 @@ public class Constants {
     // PhotonVision
     public static final int numberOfCams = 2;
 
-    public static final double MIN_CAMERA_DISTANCE = 0; // meters TODO
-
-    public static final AprilTagFields FIELD_LAYOUT = AprilTagFields.k2025ReefscapeWelded;
+    public static final String FIELD_PATH = Paths.get(Filesystem.getDeployDirectory().getAbsolutePath(), "BunnyBots2025Field.json").toString();
   
-    public static final Pose2d TEST_PATHFIND_TARGET = new Pose2d(1.199, 7.028, new Rotation2d(128.581 * (Math.PI / 180)));
-    
     // CAN RANGE Movement - Weird Units
     public static final double RIGHT_CANRANGE_OFFSET = -0.04;
 
@@ -52,5 +51,4 @@ public class Constants {
 
     public static final int PIGEON_ID = 0;
     public static final double MAX_TIP_ANGLE = 8.0;
-    
 }
